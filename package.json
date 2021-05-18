@@ -1,0 +1,23 @@
+{
+  "name": "relayx",
+  "version": "0.0.1",
+  "description": "A (web)designer layout tool with a twist",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "keywords": [],
+  "author": "Jan Riechers",
+  "license": "GNU GPL 2",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jrie/ReLayX2.git"
+  },
+  "bugs": {
+    "url": "https://github.com/jrie/ReLayX2/issues"
+  },
+  "homepage": "https://github.com/jrie/ReLayX2#readme",
+  "devDependencies": {
+    "electron": "^12.0.7"
+  }
+}
