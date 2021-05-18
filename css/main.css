@@ -5,3 +5,8 @@ body  {
     color: #00ae00;
     margin: 0px;
 }
+
+.noscript_block {
+    text-align: center;
+    width: 100%;
+}
