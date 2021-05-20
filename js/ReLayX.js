@@ -18,6 +18,11 @@ function getDesign(designName, width, height) {
             design.notificationColor = '#000'
             design.labelColor = '#000'
             design.helpTextColor = '#000'
+
+            // Input fields
+            design.textCursor = ["#fff", 1];
+            design.contentInputField = [["rect", "rect"], ["solid", "solid"], [["#999"], ["#333"]], [[0, 0, 100, 20], [1, 1, 97, 17]], 0, 0];
+            design.contentInputFieldText = [["#fff", "transparent"], ["#333", "#00003a"]];
             break
         case 'firebird':
         default:
@@ -35,6 +40,11 @@ function getDesign(designName, width, height) {
             design.helpTextColor = '#aeaeae'
 
             design.resizeRightBottom = [['line', 'line'], ['solid', 'solid'], [['#222'], ['#fff']], [[10, 0, 10, 10, 0, 10, 10, 0], [7, 3, 7, 7, 3, 7, 7, 3]], [-12, -12]]
+
+            // Input fields
+            design.textCursor = ["#fff", 1];
+            design.contentInputField = [["rect", "rect"], ["solid", "solid"], [["#999"], ["#333"]], [[0, 0, 100, 20], [1, 1, 97, 17]], 0, 0];
+            design.contentInputFieldText = [["#fff", "transparent"], ["#333", "#00003a"]];
             break
     }
 
@@ -131,6 +141,10 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
     mouse.currentAction = null
     mouse.snapToGrid = false
     mouse.current = 'default'
+    mouse.cursorAt = [0, 0, 0]
+    mouse.cursorText = ""
+    mouse.cursorBlinkRate = 40;
+    mouse.cursorBlink = true;
 
 
     // Helper functions
@@ -152,7 +166,7 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
     function createGradient(direction, x, y, width, height, colors) {
         let stepSize = 0
         let current = 0.0
-        let background;
+        let background
 
         stepSize = (1.0 / (colors.length - 1)).toPrecision(2)
         current = 1.0
@@ -796,7 +810,7 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
                 if (system.drawLabels && !system.showHelp) {
                     dc.fillStyle = design.labelColor
                     dc.textAlign = 'center'
-                    dc.font = 'Normal 0.5em sans'
+                    dc.font = 'Normal 0.75em sans'
                     dc.fillText(layoutItem[10], layoutItem[2] + ((layoutItem[4] - layoutItem[2]) * 0.5), layoutItem[3] + ((layoutItem[5] - layoutItem[3]) * 0.5) - 28)
                     dc.fillText((layoutItem[4] - layoutItem[2]) + 'x' + (layoutItem[5] - layoutItem[3]) + 'px', layoutItem[2] + ((layoutItem[4] - layoutItem[2]) * 0.5), layoutItem[3] + ((layoutItem[5] - layoutItem[3]) * 0.5))
                     dc.fillText('(' + layoutItem[2] + ', ' + layoutItem[3] + ')', layoutItem[2] + ((layoutItem[4] - layoutItem[2]) * 0.5), layoutItem[3] + ((layoutItem[5] - layoutItem[3]) * 0.5) + 18)
@@ -842,7 +856,7 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
                 if (system.drawLabels) {
                     dc.fillStyle = design.labelColor
                     dc.textAlign = 'center'
-                    dc.font = 'Normal 0.6em sans'
+                    dc.font = 'Normal 0.75em sans'
                     dc.fillText(layoutItem[10], layoutItem[2] + ((layoutItem[4] - layoutItem[2]) * 0.5), layoutItem[3] + ((layoutItem[5] - layoutItem[3]) * 0.5) - 28)
                     dc.fillText((layoutItem[4] - layoutItem[2]) + 'x' + (layoutItem[5] - layoutItem[3]) + 'px', layoutItem[2] + ((layoutItem[4] - layoutItem[2]) * 0.5), layoutItem[3] + ((layoutItem[5] - layoutItem[3]) * 0.5))
                     dc.fillText('(' + layoutItem[2] + ', ' + layoutItem[3] + ')', layoutItem[2] + ((layoutItem[4] - layoutItem[2]) * 0.5), layoutItem[3] + ((layoutItem[5] - layoutItem[3]) * 0.5) + 18)
@@ -1017,7 +1031,7 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
             dc.fillText(shortcuts[item], canvas.width * 0.25, (item * 22) + offsetY)
         }
 
-        offsetY += shortcuts.length * 22 + 70;
+        offsetY += shortcuts.length * 22 + 70
         dc.font = 'Bold 1.25em sans'
         dc.fillText('__ First steps ________________________________________________________________________________', canvas.width * 0.25, offsetY - 32)
 
@@ -1037,7 +1051,7 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
             dc.fillText(first[item], canvas.width * 0.25, (item * 21) + offsetY)
         }
 
-        offsetY += first.length * 22 + 70;
+        offsetY += first.length * 22 + 70
         dc.font = 'Bold 1.25em sans'
         dc.fillText('__ Grouping __________________________________________________________________________________', canvas.width * 0.25, offsetY - 32)
 
@@ -1057,7 +1071,7 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
             dc.fillText(group[item], canvas.width * 0.25, (item * 21) + offsetY)
         }
         
-        offsetY += group.length * 22 + 70;
+        offsetY += group.length * 22 + 70
         dc.font = 'Bold 1.25em sans'
         dc.fillText('__ Mirroring __________________________________________________________________________________', canvas.width * 0.25, offsetY - 32)
 
@@ -1089,7 +1103,7 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
             dc.fillText(mirror[item], canvas.width * 0.25, (item * 21) + offsetY)
         }
 
-        offsetY += mirror.length * 22 + 50;
+        offsetY += mirror.length * 22 + 50
 
         dc.font = 'Bold 1.25em sans'
         dc.fillText('Find more @ https://github.com/jrie/ReLayX', canvas.width * 0.25, offsetY - 32)
@@ -1137,40 +1151,16 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
     // Mainloop
     function mainloop() {
         drawItem('background', 0, 1, 2, 3, false)
+        /*
         if (!system.isCalculating) {
             if (system.drawGrid) {
                 drawGrid(system.gridStartX, system.gridStartY, system.gridEndX, system.gridEndY)
             }
         }
-
-        renderLayoutItems()
-        /*
-        if (!system.isCalculating) {
-            if (system.renderDivs) {
-                renderDivs()
-            }
-
-            if (system.drawHighlight) {
-                dc.fillStyle = design.hightlighterColor
-                dc.fillRect(Math.floor(mouse.x / system.gridX) * system.gridX, 0, system.gridX, canvas.height)
-                dc.fillRect(0, Math.floor(mouse.y / system.gridY) * system.gridY, canvas.width, system.gridY)
-            }
-
-            if (system.displayBrowserGrid) {
-                let y = system.browserSpacingStart - mouse.offsetY
-                dc.beginPath()
-                dc.lineWidth = 1
-                dc.strokeStyle = '#000'
-                while (y < system.height) {
-                    dc.moveTo(0, y)
-                    dc.lineTo(system.width, y)
-                    y += system.browserSpacing
-                }
-                dc.closePath()
-                dc.stroke()
-            }
-        }
         */
+        if (system.drawGrid) drawGrid(system.gridStartX, system.gridStartY, system.gridEndX, system.gridEndY)
+      
+        renderLayoutItems()
 
         if (system.drawHighlight) {
             dc.fillStyle = design.hightlighterColor
@@ -1195,8 +1185,27 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
         if (mouse.currentAction === 'drawing' || mouse.currentAction === 'mirrorSelection') drawSelection()
         if (system.showNotifications) renderNotifications()
         if (system.showHelp) renderHelp()
+        
+        // Draw the input text
+        if (mouse.currentAction === 'inputText') {
+            dc.fillStyle = design.contentInputFieldText[1][0];
+            // Draw the input cursor in demand
+            ++mouse.cursorBlink;
+            if (mouse.cursorBlink === mouse.cursorBlinkRate) {
+                mouse.cursorBlink = 0;
+            } else {
+                dc.beginPath();
+                dc.moveTo(mouse.cursorAt[0], mouse.cursorAt[1]);
+                dc.lineTo(mouse.cursorAt[0], mouse.cursorAt[1] + 12);
+                dc.closePath();
+                dc.strokeStyle = design.textCursor[0];
+                dc.lineWidth = design.textCursor[1];
+                dc.stroke();
+            }
+        }
 
         drawMouse()
+        
         window.requestAnimationFrame(mainloop)
     }
 
@@ -1247,8 +1256,167 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
         }
     }
 
+    function handleInputFieldInput(evt) {
+        // Dont accept user input if not targetted
+        if (evt.target.nodeName === "input" || evt.target.nodeName === "textarea") {
+            return
+        }
+
+        if (mouse.selection === null) {
+            return
+        }
+
+        if (evt.keyCode === 9) {
+            // Tab key pressed
+            evt.preventDefault()
+            return
+        }
+
+        //system.layoutData.push([id, 'containerElement', itemStartX, itemStartY, itemEndX, itemEndY, 0, 0, 0, -1, ''])
+        let text = mouse.selection[10]
+
+        dc.font = 'Normal 0.75em sans'
+        if (mouse.cursorAt[2] === text.length) {
+            mouse.cursorAt[0] = mouse.selection[2] + ((mouse.selection[4] - mouse.selection[2]) * 0.5) + (dc.measureText(text).width * 0.5)
+            mouse.cursorAt[1] = mouse.selection[3] + ((mouse.selection[5] - mouse.selection[3]) * 0.5) - 38
+            mouse.cursorAt[2] = text.length
+        }
+
+        switch (evt.keyCode) {
+            case 35:
+                // End key
+                evt.preventDefault()
+                mouse.cursorAt[0] = mouse.selection[2] + ((mouse.selection[4] - mouse.selection[2]) * 0.5) + dc.measureText(mouse.selection[10]).width * 0.5
+                mouse.cursorAt[2] = text.length
+                
+                /*
+                if (mouse.cursorItem.controlPressed) {
+                    mouse.cursorItem.selection[0] = mouse.cursorAt[2] + 1
+                }
+                */
+                return
+                break
+            case 36:
+                // Position 1 key
+                evt.preventDefault()
+                mouse.cursorAt[0] = mouse.selection[2] + ((mouse.selection[4] - mouse.selection[2]) * 0.5) - dc.measureText(mouse.selection[10]).width * 0.5
+                mouse.cursorAt[2] = 0
+                /*
+                if (mouse.cursorItem.controlPressed) {
+                    mouse.cursorItem.selection[0] = 0
+                }
+                */
+                return
+                break
+            case 9:
+                // Tabulator
+                evt.preventDefault()
+                break
+            case 32:
+                // Spacebar
+                evt.preventDefault()
+                break
+            case 13:
+                // Enter key
+                evt.preventDefault()
+                mouse.currentAction = null
+                document.removeEventListener('keydown', handleInputFieldInput)
+                return
+                break
+            case 17:
+                // Control/Strg key
+                return
+                break
+            case 46:
+                // Del key
+                if (mouse.cursorAt[2] < text.length) {
+                    text = text.substring(0, mouse.cursorAt[2]) + text.substring(mouse.cursorAt[2] + 1, text.length)
+                    mouse.selection[10] = text
+                    mouse.cursorAt[0] += 3
+                }
+                return
+                break
+            case 8:
+                // Backspace key
+                evt.preventDefault()
+                if (mouse.cursorAt[2] > 0) {
+                    --mouse.cursorAt[2]
+                    text = text.substring(0, mouse.cursorAt[2]) + text.substring(mouse.cursorAt[2] + 1, text.length)
+                    mouse.selection[10] = text
+                    mouse.cursorAt[0] -= 3
+                }
+                return
+                break
+            case 16:
+                //  Shift key
+                evt.preventDefault()
+                /*
+                mouse.cursorItem.selection = [0, 0]
+                mouse.cursorItem.controlPressed = !mouse.cursorItem.controlPressed
+                mouse.cursorItem.selection[0] = mouse.cursorAt[2] + 1
+                mouse.cursorItem.selection[1] = mouse.cursorAt[2] + 1
+                */
+                return
+                break
+
+            case 37:
+                evt.preventDefault()
+                // Arrow key left
+
+                if (mouse.cursorAt[2] !== 0) {
+                    --mouse.cursorAt[2]
+                    mouse.cursorAt[0] -= dc.measureText(text.charAt(mouse.cursorAt[2])).width
+                }
+                
+                return
+                break
+
+            case 39:
+                // Arrow key right
+                evt.preventDefault()
+                if (mouse.cursorAt[2] < text.length) {
+                    mouse.cursorAt[0] += dc.measureText(text.charAt(mouse.cursorAt[2])).width
+                    ++mouse.cursorAt[2]
+                }
+                /*
+                if (mouse.cursorItem.controlPressed) {
+                    if (cursorIndex < text.length) {
+                        mouse.cursorItem.selection[1] = mouse.cursorAt[2] + 1
+                    } else {
+                        mouse.cursorItem.selection[1] = mouse.cursorAt[2]
+                    }
+                }
+                */
+
+                return
+                break
+
+        }
+
+        if (evt.key.length === 1) {
+            let letterWidth = dc.measureText(evt.key).width
+            let textWidth = dc.measureText(text).width
+            let maxWidth = mouse.selection[4] - mouse.selection[2] - 10
+            if ((textWidth + letterWidth) > maxWidth) {
+                return
+            }
+
+            if (mouse.cursorAt[2] < text.length) {
+                mouse.selection[10] = mouse.selection[10].substring(0, mouse.cursorAt[2]) + evt.key + mouse.selection[10].substring(mouse.cursorAt[2], text.length)
+            } else mouse.selection[10] += evt.key
+
+            ++mouse.cursorAt[2]
+            mouse.cursorAt[0] += letterWidth - 3
+        }
+    }
+
     function handleKeyboardDown(evt) {
         if (evt.target.nodeName === 'INPUT' || evt.target.nodeName === 'TEXTAREA') {
+            return
+        }
+
+        if (mouse.currentAction === 'inputText') {
+            evt.preventDefault()
             return
         }
 
@@ -1311,12 +1479,16 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
         }
 
         if (evt.keyCode === 76) {
+            // L key
             if (mouse.selection !== null) {
-                let blockName = prompt('What should be the name of the block?', mouse.selection[10])
-                mouse.selection[10] = blockName
+                mouse.currentAction = 'inputText'
+                mouse.cursorAt[2] = mouse.selection[10].length
+                evt.preventDefault()
+                document.addEventListener('keydown', handleInputFieldInput)
                 return
             } else {
                 system.drawLabels = !system.drawLabels
+                mouse.currentAction = null
                 lg('Use labels is set to ' + system.drawLabels)
             }
         }
@@ -1618,6 +1790,11 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
 
     function handleKeyboardUp(evt) {
         if (evt.target.nodeName === 'INPUT' || evt.target.nodeName === 'TEXTAREA') {
+            return
+        }
+
+        if (mouse.currentAction === 'inputText') {
+            evt.preventDefault()
             return
         }
 
