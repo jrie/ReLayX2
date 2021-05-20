@@ -1395,9 +1395,8 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
 
         if (evt.key.length === 1) {
             let letterWidth = dc.measureText(evt.key).width
-            let textWidth = dc.measureText(text).width
             let maxWidth = mouse.selection[4] - mouse.selection[2] - 10
-            if ((textWidth + letterWidth) > maxWidth) {
+            if (dc.measureText(text).width + letterWidth > maxWidth) {
                 return
             }
 
@@ -1482,7 +1481,7 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
             if (mouse.selection !== null) {
                 mouse.currentAction = 'inputText'
                 dc.font = 'Normal 0.75em sans'
-                mouse.cursorAt[0] = mouse.selection[2] + ((mouse.selection[4] - mouse.selection[2]) * 0.5) + dc.measureText(mouse.selection[10]) * 0.5
+                mouse.cursorAt[0] = mouse.selection[2] + ((mouse.selection[4] - mouse.selection[2]) * 0.5) + (dc.measureText(mouse.selection[10]).width * 0.5)
                 mouse.cursorAt[1] = mouse.selection[3] + ((mouse.selection[5] - mouse.selection[3]) * 0.5) - 38
                 mouse.cursorAt[2] = mouse.selection[10].length
                 evt.preventDefault()
