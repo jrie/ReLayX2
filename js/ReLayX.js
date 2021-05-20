@@ -1479,9 +1479,11 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
         }
 
         if (evt.keyCode === 76) {
-            // L key
             if (mouse.selection !== null) {
                 mouse.currentAction = 'inputText'
+                dc.font = 'Normal 0.75em sans'
+                mouse.cursorAt[0] = mouse.selection[2] + ((mouse.selection[4] - mouse.selection[2]) * 0.5) + dc.measureText(mouse.selection[10]) * 0.5
+                mouse.cursorAt[1] = mouse.selection[3] + ((mouse.selection[5] - mouse.selection[3]) * 0.5) - 38
                 mouse.cursorAt[2] = mouse.selection[10].length
                 evt.preventDefault()
                 document.addEventListener('keydown', handleInputFieldInput)
