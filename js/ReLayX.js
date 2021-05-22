@@ -1112,7 +1112,9 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
             '[G] key toggles the grid on an off, [Shift + G] toggles custom designs',
             '[D] toogles row / column highlighting / [Shift + D] toggles browser scroll grid on/off',
             '[Control] cancels ongoing action or when grouping/ungrouping items',
-            '[Shift] snaps to grid when drawing selection, moving an item (click and drag) and mirroring',
+            '[Shift] snaps to grid when drawing selection, moving an item (click and drag) and mirroring.`
+            `This also works when resizing.',
+            '[Shift + I] Toggles image display on and off',
             '[Left click and drag movement] Moves a single item or a single item of a group',
             '[Y / Z] Move mode on/off switch, moves a element or group if grouped, can be used with snapping',
             '[Del] Deletes a single element or a grouped element',
