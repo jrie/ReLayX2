@@ -20,9 +20,9 @@ function getDesign(designName, width, height) {
             design.helpTextColor = '#000'
 
             // Input fields
-            design.textCursor = ["#fff", 1];
-            design.contentInputField = [["rect", "rect"], ["solid", "solid"], [["#999"], ["#333"]], [[0, 0, 100, 20], [1, 1, 97, 17]], 0, 0];
-            design.contentInputFieldText = [["#fff", "transparent"], ["#333", "#00003a"]];
+            design.textCursor = ['#fff', 1];
+            design.contentInputFieldText = '#333';
+            design.contentInputBackground = 'rgba(0,0,0, 0.6)'
             break
         case 'firebird':
         default:
@@ -42,9 +42,9 @@ function getDesign(designName, width, height) {
             design.resizeRightBottom = [['line', 'line'], ['solid', 'solid'], [['#222'], ['#fff']], [[10, 0, 10, 10, 0, 10, 10, 0], [7, 3, 7, 7, 3, 7, 7, 3]], [-12, -12]]
 
             // Input fields
-            design.textCursor = ["#fff", 1];
-            design.contentInputField = [["rect", "rect"], ["solid", "solid"], [["#999"], ["#333"]], [[0, 0, 100, 20], [1, 1, 97, 17]], 0, 0];
-            design.contentInputFieldText = [["#fff", "transparent"], ["#333", "#00003a"]];
+            design.textCursor = ['rgba(255,255,255, 0.7', 1];
+            design.contentInputFieldText = '#333'
+            design.contentInputBackground = 'rgba(0,0,0, 0.6)'
             break
     }
 
@@ -105,6 +105,7 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
     system.lastId = 0
     system.drawGrid = true
     system.drawHighlight = true
+    system.drawCorners = true
     system.copyItem = null
     system.mirrorHorizontal = true
     system.expandMode = 'border'
@@ -142,7 +143,7 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
     mouse.snapToGrid = false
     mouse.current = 'default'
     mouse.cursorAt = [0, 0, 0]
-    mouse.cursorText = ""
+    mouse.cursorText = ''
     mouse.cursorBlinkRate = 40;
     mouse.cursorBlink = true;
 
@@ -777,7 +778,7 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
         }
 
         // id, designElementName, x, y, xEnd, yEnd, border, padding, margin, groupIndex
-        system.layoutData.push([id, 'containerElement', itemStartX, itemStartY, itemEndX, itemEndY, 0, 0, 0, -1, ''])
+        system.layoutData.push([id, 'containerElement', itemStartX, itemStartY, itemEndX, itemEndY, 0, 0, 0, -1, '', null])
         ++system.layoutSize
         return id
     }
@@ -801,19 +802,42 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
                     dc.stroke()
                 }
 
-                dc.beginPath()
-                dc.rect(layoutItem[2], layoutItem[3], layoutItem[4] - layoutItem[2], layoutItem[5] - layoutItem[3])
-                dc.closePath()
-                dc.fill()
+                dc.fillRect(layoutItem[2], layoutItem[3], layoutItem[4] - layoutItem[2], layoutItem[5] - layoutItem[3])
+
+                if (layoutItem[11] !== null)  {
+                    try {
+                        // Try to draw the image
+                        dc.drawImage(layoutItem[11], layoutItem[2], layoutItem[3], layoutItem[4] - layoutItem[2] - 2, layoutItem[5] - layoutItem[3] - 2)
+                    } catch(err) {
+                        // If there is an error drawing, drop the image
+                        lg('Error with a image ressource. Dropped image.')
+                        layoutItem[11] = null
+                    }
+                }
 
                 // Draw the labels
                 if (system.drawLabels && !system.showHelp) {
-                    dc.fillStyle = design.labelColor
                     dc.textAlign = 'center'
                     dc.font = 'Normal 0.75em sans'
-                    dc.fillText(layoutItem[10], layoutItem[2] + ((layoutItem[4] - layoutItem[2]) * 0.5), layoutItem[3] + ((layoutItem[5] - layoutItem[3]) * 0.5) - 28)
-                    dc.fillText((layoutItem[4] - layoutItem[2]) + 'x' + (layoutItem[5] - layoutItem[3]) + 'px', layoutItem[2] + ((layoutItem[4] - layoutItem[2]) * 0.5), layoutItem[3] + ((layoutItem[5] - layoutItem[3]) * 0.5))
-                    dc.fillText('(' + layoutItem[2] + ', ' + layoutItem[3] + ')', layoutItem[2] + ((layoutItem[4] - layoutItem[2]) * 0.5), layoutItem[3] + ((layoutItem[5] - layoutItem[3]) * 0.5) + 18)
+
+                    let centerX = layoutItem[2] + ((layoutItem[4] - layoutItem[2]) * 0.5)
+                    let centerY = layoutItem[3] + ((layoutItem[5] - layoutItem[3]) * 0.5)
+
+                    let textWidth = (dc.measureText(layoutItem[10]).width * 0.5);
+                    if (textWidth !== 0) textWidth += 6
+
+                    let textSizes = (dc.measureText((layoutItem[4] - layoutItem[2]) + 'x' + (layoutItem[5] - layoutItem[3]) + 'px').width * 0.5) + 6
+                    let textCoords = (dc.measureText('(' + layoutItem[2] + ', ' + layoutItem[3] + ')').width * 0.5) + 6
+
+                    dc.fillStyle = design.contentInputBackground
+                    dc.fillRect(centerX - textWidth, centerY - 44, textWidth * 2, 24)
+                    dc.fillRect(centerX - textSizes, centerY - 15, textSizes * 2, 24)
+                    dc.fillRect(centerX - textCoords, centerY + 10, textCoords * 2, 24)
+
+                    dc.fillStyle = design.labelColor
+                    dc.fillText(layoutItem[10], centerX, centerY - 28)
+                    dc.fillText((layoutItem[4] - layoutItem[2]) + 'x' + (layoutItem[5] - layoutItem[3]) + 'px', centerX, centerY)
+                    dc.fillText('(' + layoutItem[2] + ', ' + layoutItem[3] + ')', centerX, centerY + 25)
                 }
             }
         } else {
@@ -829,37 +853,49 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
                     dc.strokeStyle = design.containerBorderColor
                     dc.stroke()
                 }
+                
+                if (layoutItem[11] !== null) dc.drawImage(layoutItem[11], layoutItem[2], layoutItem[3], layoutItem[4] - layoutItem[2], layoutItem[5] - layoutItem[3])
 
                 if (system.activeGroup !== null && layoutItem[9] === system.activeGroup && mouse.selection[9] === layoutItem[9]) {
                     if (mouse.selection[0] === layoutItem[0]) dc.fillStyle = design.itemSelectionColor[1]
                     else dc.fillStyle = design.itemSelectionColor[0]
 
-                    dc.beginPath()
-                    dc.rect(layoutItem[2], layoutItem[3], layoutItem[4] - layoutItem[2], layoutItem[5] - layoutItem[3])
-                    dc.closePath()
-                    dc.fill()
+                    dc.fillRect(layoutItem[2], layoutItem[3], layoutItem[4] - layoutItem[2], layoutItem[5] - layoutItem[3])
                 } else if (mouse.selection[0] === layoutItem[0]) {
                     dc.fillStyle = design.itemSelectionColor[0]
-                    dc.beginPath()
-                    dc.rect(layoutItem[2], layoutItem[3], layoutItem[4] - layoutItem[2], layoutItem[5] - layoutItem[3])
-                    dc.closePath()
-                    dc.fill()
+                    dc.fillRect(layoutItem[2], layoutItem[3], layoutItem[4] - layoutItem[2], layoutItem[5] - layoutItem[3])
                 } else {
                     if (itemDesign[0] === 'solid')  dc.fillStyle = itemDesign[1]
-                    dc.beginPath()
-                    dc.rect(layoutItem[2], layoutItem[3], layoutItem[4] - layoutItem[2], layoutItem[5] - layoutItem[3])
-                    dc.closePath()
-                    dc.fill()
+                    dc.fillRect(layoutItem[2], layoutItem[3], layoutItem[4] - layoutItem[2], layoutItem[5] - layoutItem[3])
                 }
 
                 // Draw the labels
+
+
                 if (system.drawLabels) {
+                    let centerX = layoutItem[2] + ((layoutItem[4] - layoutItem[2]) * 0.5)
+                    let centerY = layoutItem[3] + ((layoutItem[5] - layoutItem[3]) * 0.5)
+
                     dc.fillStyle = design.labelColor
                     dc.textAlign = 'center'
                     dc.font = 'Normal 0.75em sans'
-                    dc.fillText(layoutItem[10], layoutItem[2] + ((layoutItem[4] - layoutItem[2]) * 0.5), layoutItem[3] + ((layoutItem[5] - layoutItem[3]) * 0.5) - 28)
-                    dc.fillText((layoutItem[4] - layoutItem[2]) + 'x' + (layoutItem[5] - layoutItem[3]) + 'px', layoutItem[2] + ((layoutItem[4] - layoutItem[2]) * 0.5), layoutItem[3] + ((layoutItem[5] - layoutItem[3]) * 0.5))
-                    dc.fillText('(' + layoutItem[2] + ', ' + layoutItem[3] + ')', layoutItem[2] + ((layoutItem[4] - layoutItem[2]) * 0.5), layoutItem[3] + ((layoutItem[5] - layoutItem[3]) * 0.5) + 18)
+                    
+                    let textWidth = (dc.measureText(layoutItem[10]).width * 0.5);
+                    if (textWidth !== 0) textWidth += 6
+                    
+                    let textSizes = (dc.measureText((layoutItem[4] - layoutItem[2]) + 'x' + (layoutItem[5] - layoutItem[3]) + 'px').width * 0.5) + 6
+                    let textCoords = (dc.measureText('(' + layoutItem[2] + ', ' + layoutItem[3] + ')').width * 0.5) + 6
+                    
+
+                    dc.fillStyle = design.contentInputBackground
+                    dc.fillRect(centerX - textWidth, centerY - 44, textWidth * 2, 24)
+                    dc.fillRect(centerX - textSizes, centerY - 15, textSizes * 2, 24)
+                    dc.fillRect(centerX - textCoords, centerY + 10, textCoords * 2, 24)
+
+                    dc.fillStyle = design.labelColor
+                    dc.fillText(layoutItem[10], centerX, centerY - 28)
+                    dc.fillText((layoutItem[4] - layoutItem[2]) + 'x' + (layoutItem[5] - layoutItem[3]) + 'px', centerX, centerY)
+                    dc.fillText('(' + layoutItem[2] + ', ' + layoutItem[3] + ')', centerX, centerY + 25)
                 }
             }
         }
@@ -1188,7 +1224,7 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
         
         // Draw the input text
         if (mouse.currentAction === 'inputText') {
-            dc.fillStyle = design.contentInputFieldText[1][0];
+            dc.fillStyle = design.contentInputFieldText;
             // Draw the input cursor in demand
             ++mouse.cursorBlink;
             if (mouse.cursorBlink === mouse.cursorBlinkRate) {
@@ -1258,7 +1294,7 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
 
     function handleInputFieldInput(evt) {
         // Dont accept user input if not targetted
-        if (evt.target.nodeName === "input" || evt.target.nodeName === "textarea") {
+        if (evt.target.nodeName === 'input' || evt.target.nodeName === 'textarea') {
             return
         }
 
@@ -1592,7 +1628,14 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
 
         let item = 0
         for (item = 0; item < system.layoutSize; item++) {
-            system.storage.setItem(layoutSubKey + item, system.layoutData[item])
+            if (system.layoutData[item][11] !== null)  {
+                let temp = system.layoutData[item][11]
+                system.layoutData[item][11] = system.layoutData[item][11].src
+                system.storage.setItem(layoutSubKey + item, system.layoutData[item])
+                system.layoutData[item][11] = temp
+            } else {
+                system.storage.setItem(layoutSubKey + item, system.layoutData[item])
+            }
         }
         system.storage.setItem(layoutSubKey + item, false)
         lg('Design saved in slot ' + slot + '.')
@@ -1615,14 +1658,24 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
             system.layoutSize = 0
             system.groups = []
             system.activeGroup = null
-            system.generatedDivs = []
             mouse.selection = null
 
             let groupIndexes = []
 
             while (system.storage.getItem(layoutSubKey + layoutIndex) !== null && system.storage.getItem(layoutSubKey + layoutIndex) !== 'false') {
+                
                 let storageItemData = system.storage.getItem(layoutSubKey + layoutIndex).split(',')
                 for (let key = 0; key < storageItemData.length; key++) {
+
+                    // Handle image data specially
+                    if (key === 11 && storageItemData[11] !== null) {
+                        let image = new Image()
+                        image.src = storageItemData[11]
+                        storageItemData[11] = image
+                        continue
+                    }
+
+                    // Regular values
                     let floatVal = parseFloat(storageItemData[key])
                     if (!Number.isNaN(floatVal)) {
                         storageItemData[key] = floatVal
@@ -1640,6 +1693,7 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
 
                     storageItemData[9] = groupIndexes.indexOf(groupKey)
                 }
+
                 system.layoutData.push(storageItemData)
                 ++system.layoutSize
                 ++layoutIndex
@@ -1867,6 +1921,9 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
             // C key starts a copy
             if (mouse.selection !== null) {
                 system.copyItem = mouse.selection
+            } else {
+                system.drawCorners = !system.drawCorners
+                lg('Switching hot corner display ' + (system.drawCorners ? 'on' : 'off'))
             }
             lg('Taking a copy of layout item: ' + system.copyItem[0])
         } else if (evt.keyCode === 86) {
@@ -1934,9 +1991,43 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
         }
     }
 
+    function addImageToLayout(evt) {
+        if (mouse.selection !== null) mouse.selection[11] = evt.target
+
+        evt.target.removeEventListener('load', addImageToLayout)
+    }
+
+    function importImage(evt) {
+        for (let fileItem of evt.dataTransfer.files) {
+            if (fileItem.type === 'image/jpeg' || fileItem.type === 'image/jpg' || fileItem.type === 'image/png' || fileItem.type === 'image/gif') {
+                if (fileItem.path !== undefined) {
+                    let imageMap = new Image(fileItem)
+                    imageMap.addEventListener('load', addImageToLayout)
+                    imageMap.src = fileItem.path
+                } else {
+                    let reader = new FileReader();
+                    reader.readAsDataURL(fileItem);
+
+                    reader.addEventListener("load", function () {
+                        let imageMap = new Image()
+                        imageMap.addEventListener('load', addImageToLayout)
+                        imageMap.src = reader.result
+                    }, false);
+                }
+            }
+        }
+        evt.preventDefault()
+    }
+
+    function allowImageDrop(evt) {
+        evt.preventDefault()
+    }
+
     canvas.addEventListener('mousemove', handleMouseMove)
     canvas.addEventListener('mousedown', checkMouseDown)
     canvas.addEventListener('mouseup', checkMouseUp)
+    canvas.addEventListener('drop', importImage)
+    canvas.addEventListener('dragover', allowImageDrop)
     document.addEventListener('keydown', handleKeyboardDown)
     document.addEventListener('keyup', handleKeyboardUp)
     mainloop()
