@@ -1623,11 +1623,11 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
         for (item = 0; item < system.layoutSize; item++) {
             if (system.layoutData[item][11] !== null)  {
                 let temp = system.layoutData[item][11]
-                system.layoutData[item][11] = system.layoutData[item][11].src.toString()
+                system.layoutData[item][11] = system.layoutData[item][11].src.toString().replace(/\,/g, '|||')
                 system.storage.setItem(layoutSubKey + item, system.layoutData[item])
                 system.layoutData[item][11] = temp
             } else {
-                system.storage.setItem(layoutSubKey + item, system.layoutData[item].replace(/,/g, '||'))
+                system.storage.setItem(layoutSubKey + item, system.layoutData[item])
             }
         }
         system.storage.setItem(layoutSubKey + item, false)
@@ -1663,8 +1663,9 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
                     // Handle image data specially
                     if (key === 11 && storageItemData[11] !== null) {
                         let image = new Image()
-                        if (storageItemData[11].startsWith('data:')) image.src = storageItemData[11] + ',' + storageItemData[12]
+                        if (storageItemData[11].startsWith('data:')) image.src = storageItemData[11].replace(/\|\|\|/gm, ',')
                         else image.src = storageItemData[11]
+                        console.log(image.src)
                         
                         storageItemData[11] = image
                         continue
