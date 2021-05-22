@@ -1017,7 +1017,7 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
     }
 
     function renderHelp() {
-        dc.fillStyle = 'rgba(0,0,0, 0.5)'
+        dc.fillStyle = 'rgba(0,0,0, 0.75)'
         dc.beginPath()
         dc.rect(0, 0, canvas.width, canvas.height)
         dc.closePath()
