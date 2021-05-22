@@ -117,9 +117,6 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
     system.showHelpNote = true
     system.shiftPressed = false
     system.storage = window.localStorage || null
-    system.isCalculating = false
-    system.generatedDivs = []
-    system.renderDivs = true
     system.drawLabels = true
     system.displayBrowserGrid = false
     system.browserSpacingStart = 113
@@ -375,9 +372,9 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
                 let mEndY = mouse.selection[5]
                 let containerX = mEndX - mStartX
                 let containerY = mEndY - mStartY
-                
+
                 if (system.mirrorHorizontal) {
-                    
+
                     if (system.spaceGridX > 0) {
                         offsetGridX = system.spaceGridX
                         offsetX = containerX + system.spaceGridX
@@ -568,11 +565,11 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
                     let index = group.indexOf(mouse.selection[0])
                     if (index !== -1) {
                         group.splice(index, 1)
-                        
+
                         if (group.length === 1) {
                             // Remove a group with a single item
                             system.groups.splice(system.activeGroup, 1)
-                            
+
                             // Update ahead group information
                             let groupStart = system.activeGroup
                             for (let layoutItem of system.layoutData) {
@@ -582,7 +579,7 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
 
                             system.activeGroup = null
                         }
-                        
+
                         mouse.selection[9] = -1
                     }
                 }
@@ -791,7 +788,7 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
             for (let layoutItem of system.layoutData) {
                 itemDesign = design[layoutItem[1]]
                 if (itemDesign[0] === 'solid') dc.fillStyle = itemDesign[1]
-                
+
                 // Drawing the border
                 if (layoutItem[6] !== 0) {
                     dc.lineWidth = layoutItem[6]
@@ -804,7 +801,7 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
 
                 dc.fillRect(layoutItem[2], layoutItem[3], layoutItem[4] - layoutItem[2], layoutItem[5] - layoutItem[3])
 
-                if (layoutItem[11] !== null)  {
+                if (layoutItem[11] !== null) {
                     dc.drawImage(layoutItem[11], layoutItem[2], layoutItem[3], layoutItem[4] - layoutItem[2] - 2, layoutItem[5] - layoutItem[3] - 2)
                 }
 
@@ -846,7 +843,7 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
                     dc.strokeStyle = design.containerBorderColor
                     dc.stroke()
                 }
-                
+
                 if (layoutItem[11] !== null) dc.drawImage(layoutItem[11], layoutItem[2], layoutItem[3], layoutItem[4] - layoutItem[2], layoutItem[5] - layoutItem[3])
 
                 if (system.activeGroup !== null && layoutItem[9] === system.activeGroup && mouse.selection[9] === layoutItem[9]) {
@@ -858,7 +855,7 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
                     dc.fillStyle = design.itemSelectionColor[0]
                     dc.fillRect(layoutItem[2], layoutItem[3], layoutItem[4] - layoutItem[2], layoutItem[5] - layoutItem[3])
                 } else {
-                    if (itemDesign[0] === 'solid')  dc.fillStyle = itemDesign[1]
+                    if (itemDesign[0] === 'solid') dc.fillStyle = itemDesign[1]
                     dc.fillRect(layoutItem[2], layoutItem[3], layoutItem[4] - layoutItem[2], layoutItem[5] - layoutItem[3])
                 }
 
@@ -872,13 +869,13 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
                     dc.fillStyle = design.labelColor
                     dc.textAlign = 'center'
                     dc.font = 'Normal 0.75em sans'
-                    
+
                     let textWidth = (dc.measureText(layoutItem[10]).width * 0.5);
                     if (textWidth !== 0) textWidth += 6
-                    
+
                     let textSizes = (dc.measureText((layoutItem[4] - layoutItem[2]).toFixed(0) + 'x' + (layoutItem[5] - layoutItem[3]).toFixed(0) + 'px').width * 0.5) + 6
                     let textCoords = (dc.measureText('(' + layoutItem[2].toFixed(0) + ', ' + layoutItem[3].toFixed(0) + ')').width * 0.5) + 6
-                    
+
 
                     dc.fillStyle = design.contentInputBackground
                     dc.fillRect(centerX - textWidth, centerY - 44, textWidth * 2, 24)
@@ -1045,7 +1042,7 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
             '[E] zeros/erases the grid spacing values for both mirroring axis',
             '[+ or -] Increase or decrase the border on a single item or a group of items',
             '[1 to 9] - Loads the design from slot 1 to 9, [SHIFT + 1 ... 9] saves a design to slot 1 to 9',
-            '[BACKSPACE] Clears all saved data',            
+            '[BACKSPACE] Clears all saved data',
             '[L] Create or rename a labeled item if selected, if nothing is selected, turns label rendering on or off'
         ]
 
@@ -1099,7 +1096,7 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
         for (let item in group) {
             dc.fillText(group[item], canvas.width * 0.25, (item * 21) + offsetY)
         }
-        
+
         offsetY += group.length * 22 + 70
         dc.font = 'Bold 1.25em sans'
         dc.fillText('__ Mirroring __________________________________________________________________________________', canvas.width * 0.25, offsetY - 32)
@@ -1164,31 +1161,12 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
         }
     }
 
-    function renderDivs() {
-        dc.beginPath()
-        dc.lineWidth = 2
-        dc.strokeStyle = design.containerBorderColor
-        for (let div of system.generatedDivs) {
-            dc.rect(div[0], div[1], div[2] - div[0], div[3] - div[1])
-        }
-        dc.closePath()
-        dc.stroke()
-        dc.lineWidth = 1
-    }
-
-
     // Mainloop
     function mainloop() {
         drawItem('background', 0, 1, 2, 3, false)
-        /*
-        if (!system.isCalculating) {
-            if (system.drawGrid) {
-                drawGrid(system.gridStartX, system.gridStartY, system.gridEndX, system.gridEndY)
-            }
-        }
-        */
+
         if (system.drawGrid) drawGrid(system.gridStartX, system.gridStartY, system.gridEndX, system.gridEndY)
-      
+
         renderLayoutItems()
 
         if (system.drawHighlight) {
@@ -1214,13 +1192,12 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
         if (mouse.currentAction === 'drawing' || mouse.currentAction === 'mirrorSelection') drawSelection()
         if (system.showNotifications) renderNotifications()
         if (system.showHelp) renderHelp()
-        
+
         // Draw the input text
         if (mouse.currentAction === 'inputText') {
             dc.fillStyle = design.contentInputFieldText;
             // Draw the input cursor in demand
-            ++mouse.cursorBlink;
-            if (mouse.cursorBlink === mouse.cursorBlinkRate) {
+            if (++mouse.cursorBlink === mouse.cursorBlinkRate) {
                 mouse.cursorBlink = 0;
             } else {
                 dc.beginPath();
@@ -1234,12 +1211,12 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
         }
 
         drawMouse()
-        
+
         window.requestAnimationFrame(mainloop)
     }
 
 
-// Bind the mouse to the current window
+    // Bind the mouse to the current window
     function handleMouseMove(evt) {
         let mousePreviousX = mouse.x
         let mousePreviousY = mouse.y
@@ -1265,7 +1242,7 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
         } else if (mouse.currentAction === 'dragGroup' && system.activeGroup !== null) {
             let mX = mouse.x - mousePreviousX
             let mY = mouse.y - mousePreviousY
-            
+
             for (let groupItem of system.groups[system.activeGroup]) {
                 for (let layoutItem of system.layoutData) {
                     if (layoutItem[0] !== groupItem) continue
@@ -1317,7 +1294,7 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
                 evt.preventDefault()
                 mouse.cursorAt[0] = mouse.selection[2] + ((mouse.selection[4] - mouse.selection[2]) * 0.5) + dc.measureText(mouse.selection[10]).width * 0.5
                 mouse.cursorAt[2] = text.length
-                
+
                 /*
                 if (mouse.cursorItem.controlPressed) {
                     mouse.cursorItem.selection[0] = mouse.cursorAt[2] + 1
@@ -1396,7 +1373,7 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
                     --mouse.cursorAt[2]
                     mouse.cursorAt[0] -= dc.measureText(text.charAt(mouse.cursorAt[2])).width
                 }
-                
+
                 return
                 break
 
@@ -1621,7 +1598,7 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
 
         let item = 0
         for (item = 0; item < system.layoutSize; item++) {
-            if (system.layoutData[item][11] !== null)  {
+            if (system.layoutData[item][11] !== null) {
                 let temp = system.layoutData[item][11]
                 system.layoutData[item][11] = system.layoutData[item][11].src.toString().replace(/\,/g, '|||')
                 system.storage.setItem(layoutSubKey + item, system.layoutData[item])
@@ -1656,7 +1633,7 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
             let groupIndexes = []
 
             while (system.storage.getItem(layoutSubKey + layoutIndex) !== null && system.storage.getItem(layoutSubKey + layoutIndex) !== 'false') {
-                
+
                 let storageItemData = system.storage.getItem(layoutSubKey + layoutIndex).split(',')
                 for (let key = 0; key < storageItemData.length; key++) {
 
@@ -1665,7 +1642,7 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
                         let image = new Image()
                         if (storageItemData[11].startsWith('data:')) image.src = storageItemData[11].replace(/\|\|\|/gm, ',')
                         else image.src = storageItemData[11]
-                        
+
                         storageItemData[11] = image
                         continue
                     }
@@ -1709,135 +1686,6 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
         Storage.clear()
     }
 
-    function rebindHandlers() {
-        mouse.selection = null
-
-        if (system.isCalculating) {
-            canvas.removeEventListener('mousedown', checkMouseDown)
-            document.removeEventListener('keydown', handleKeyboardDown)
-            document.removeEventListener('keyup', handleKeyboardUp)
-        } else {
-            canvas.addEventListener('mousedown', checkMouseDown)
-            document.addEventListener('keydown', handleKeyboardDown)
-            document.addEventListener('keyup', handleKeyboardUp)
-        }
-    }
-
-    function generateRenderedView() {
-
-        // The general starting coordinates
-        let startX = system.gridStartX
-        let startY = system.gridStartY
-        let endX = system.gridEndX
-        let endY = system.gridEndY
-
-        // The general point we are working with
-        let x = startX
-        let y = startY
-
-        let items = system.layoutSize
-        let item = system.layoutData[0]
-        let possibleItems = getArrayCopy(system.layoutData)
-        let discoveredItems = []
-
-        // Do the actual processing
-        if (system.isCalculating) {
-            return
-        }
-
-        system.isCalculating = true
-        system.generatedDivs = []
-        system.activeGroup = null
-        mouse.selection = null
-        rebindHandlers()
-
-        let activeGroup = -1
-        let generatedDivs = []
-
-        function calculateDivs() {
-            let item = []
-
-            let activeDiv = []
-            let usedGroups = []
-            for (let item of discoveredItems) {
-                if (item[4] === -1) {
-                    // Create a single div
-                    generatedDivs.push([item[0], item[1], item[2], item[3], item[5]])
-                    usedGroups.push(-1)
-                } else {
-                    let index = usedGroups.indexOf(item[4])
-                    if (index === -1) {
-                        usedGroups.push(item[4])
-                        generatedDivs.push([item[0], item[1], item[2], item[3], item[5]])
-                    } else {
-                        activeDiv = generatedDivs[index]
-                        activeDiv[2] = item[2]
-                        activeDiv[3] = item[3]
-                    }
-                }
-            }
-
-            system.generatedDivs = generatedDivs
-        }
-
-        function doProcessing() {
-            for (x = startX; x < endX; x++) {
-                items = discoveredItems.length
-                while (items--) {
-                    item = discoveredItems[items]
-                    dc.beginPath()
-                    dc.rect(item[0], item[1], item[2] - item[0], item[3] - item[1])
-                    dc.closePath()
-                    if (dc.isPointInPath(x, y)) {
-                        x += item[2] - item[0] + 1
-                        mouse.selection = [item[5]]
-                        break
-                    }
-                }
-
-                items = possibleItems.length
-                while (items--) {
-                    item = possibleItems[items]
-                    dc.beginPath()
-                    dc.rect(item[2], item[3], item[4], item[5])
-                    dc.closePath()
-                    if (dc.isPointInPath(x, y)) {
-                        discoveredItems.push([item[2], item[3], item[4], item[5], item[9], item[0]])
-                        mouse.selection = [item[0]]
-                        x = item[4] + 1
-                        possibleItems.splice(items, 1)
-                        break
-                    }
-                }
-
-                if (possibleItems.length === 0) {
-                    lg('Processing done...')
-                    system.isCalculating = false
-                    calculateDivs()
-                    rebindHandlers()
-                    return
-                }
-            }
-
-            lg('Processing of row ' + ((y - startY) + 1) + ' done.')
-
-            ++y
-            if (y > endY) {
-                lg('Processing done...')
-                system.isCalculating = false
-                calculateDivs()
-                rebindHandlers()
-                return
-            }
-
-            window.requestAnimationFrame(doProcessing)
-        }
-
-        // Call the processor  loop first time
-        doProcessing()
-    }
-
-
     function handleKeyboardUp(evt) {
         if (evt.target.nodeName === 'INPUT' || evt.target.nodeName === 'TEXTAREA') {
             return
@@ -1852,14 +1700,7 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
             mouse.snapToGrid = false
             system.shiftPressed = false
             return
-        }/* else if (evt.keyCode === 82) {
-            generateRenderedView()
-            lg('Generating rendered view')
-            return
-        } else if (evt.keyCode === 72) {
-            system.renderDivs = !system.renderDivs
-            return
-        }*/
+        }
 
         if (system.shiftPressed) {
             if (evt.keyCode >= 49 && evt.keyCode <= 57) {
