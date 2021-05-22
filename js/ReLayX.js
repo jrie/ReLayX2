@@ -19,6 +19,24 @@ function getDesign(designName, width, height) {
             design.labelColor = '#000'
             design.helpTextColor = '#000'
 
+            // Resizers
+            design.resizeCorners = ['#222', '#fff']
+            // Hot corners
+            design.resizers = {
+                'coords': [
+                    [[7, 7], [23, 7], [7, 23], [7, 7]],
+                    [[-7, -7], [-23, -7], [-7, -23], [-7, -7]],
+                    [[-7, 7], [-23, 7], [-7, 23], [-7, 7]],
+                    [[7, -7], [23, -7], [7, -23], [7, -7]]
+                ],
+                'start': [
+                    [0, 0],
+                    [1, 1],
+                    [1, 0],
+                    [0, 1]
+                ]
+            }
+
             // Input fields
             design.textCursor = ['#fff', 1];
             design.contentInputFieldText = '#333';
@@ -39,7 +57,23 @@ function getDesign(designName, width, height) {
             design.labelColor = '#aeaeae'
             design.helpTextColor = '#aeaeae'
 
-            design.resizeRightBottom = [['line', 'line'], ['solid', 'solid'], [['#222'], ['#fff']], [[10, 0, 10, 10, 0, 10, 10, 0], [7, 3, 7, 7, 3, 7, 7, 3]], [-12, -12]]
+            // Resizers
+            design.resizeCorners = ['#111', '#ae0']
+            // Hot corners
+            design.resizers = {
+                'coords': [
+                    [[7, 7], [23, 7], [7, 23], [7, 7]],
+                    [[-7, -7], [-23, -7], [-7, -23], [-7, -7]],
+                    [[-7, 7], [-23, 7], [-7, 23], [-7, 7]],
+                    [[7, -7], [23, -7], [7, -23], [7, -7]]
+                ],
+                'start': [
+                    [0, 0],
+                    [1, 1],
+                    [1, 0],
+                    [0, 1]
+                ]
+            }
 
             // Input fields
             design.textCursor = ['rgba(255,255,255, 0.7', 1];
@@ -105,7 +139,7 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
     system.lastId = 0
     system.drawGrid = true
     system.drawHighlight = true
-    system.drawCorners = true
+    system.drawResizers = true
     system.copyItem = null
     system.mirrorHorizontal = true
     system.expandMode = 'border'
@@ -141,8 +175,10 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
     mouse.current = 'default'
     mouse.cursorAt = [0, 0, 0]
     mouse.cursorText = ''
-    mouse.cursorBlinkRate = 40;
-    mouse.cursorBlink = true;
+    mouse.cursorBlinkRate = 40
+    mouse.cursorBlink = true
+    mouse.hasCorner = null
+    mouse.hasCornerPx = [0, 0]
 
 
     // Helper functions
@@ -522,8 +558,31 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
             return
         }
 
-        // TODO: Check for splitters or other items underneath the cursor
         for (let layoutItem of system.layoutData) {
+            // Draw hot resize corners and check for point in path
+            if (system.drawResizers) {
+                mouse.hasCorner = null
+                mouse.hasCornerPx = [0, 0]
+                for (let index = 0; index < design.resizers['start'].length; ++index) {
+                    let startX = design.resizers['start'][index][0] === 0 ? layoutItem[2] : layoutItem[4]
+                    let startY = design.resizers['start'][index][1] === 0 ? layoutItem[3] : layoutItem[5]
+
+                    dc.beginPath()
+                    for (let coordinate of design.resizers['coords'][index]) dc.lineTo(startX + coordinate[0], startY + coordinate[1])
+                    dc.closePath()
+
+                    if (dc.isPointInPath(mouse.x, mouse.y)) {
+                        mouse.hasCorner = design.resizers['start'][index]
+                        let cornerX = design.resizers['start'][index][0] === 0 ? mouse.x - layoutItem[2] : mouse.x - layoutItem[4]
+                        let cornerY = design.resizers['start'][index][1] === 0 ? mouse.y - layoutItem[3] : mouse.y - layoutItem[5]
+                        mouse.hasCornerPx = [cornerX, cornerY]
+                        mouse.currentAction = 'resizeCorner'
+                        return
+                    }
+                }
+            }
+            
+            // Check layout container pathes            
             dc.beginPath()
             dc.rect(layoutItem[2], layoutItem[3], layoutItem[4] - layoutItem[2], layoutItem[5] - layoutItem[3])
             dc.closePath()
@@ -605,9 +664,13 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
         mouse.endX = evt.layerX
         mouse.endY = evt.layerY
 
-        if (mouse.currentAction === 'drawing') {
+        if (mouse.currentAction === 'resizeCorner') {
+            mouse.currentAction = null
+            return
+        } else if (mouse.currentAction === 'drawing') {
             createLayoutContainer(mouse.startX, mouse.startY, mouse.endX, mouse.endY, true)
             mouse.currentAction = null
+            return
         } else if (mouse.currentAction === 'mirrorSelection') {
             let mStartX = 0
             let mStartY = 0
@@ -624,7 +687,6 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
                 mStartY = mouse.startY
                 mEndX = mouse.endX
                 mEndY = mouse.endY
-
             }
 
             let containerX = mEndX - mStartX
@@ -697,6 +759,7 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
             }
 
             mouse.currentAction = null
+            return
         }
 
         if (mouse.currentAction === 'dragContainer' || mouse.currentAction === 'dragGroup') {
@@ -774,7 +837,7 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
             }
         }
 
-        // id, designElementName, x, y, xEnd, yEnd, border, padding, margin, groupIndex
+        // id, designElementName, x, y, xEnd, yEnd, border, padding, margin, groupIndex, labeltext, img
         system.layoutData.push([id, 'containerElement', itemStartX, itemStartY, itemEndX, itemEndY, 0, 0, 0, -1, '', null])
         ++system.layoutSize
         return id
@@ -801,9 +864,7 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
 
                 dc.fillRect(layoutItem[2], layoutItem[3], layoutItem[4] - layoutItem[2], layoutItem[5] - layoutItem[3])
 
-                if (layoutItem[11] !== null) {
-                    dc.drawImage(layoutItem[11], layoutItem[2], layoutItem[3], layoutItem[4] - layoutItem[2] - 2, layoutItem[5] - layoutItem[3] - 2)
-                }
+                if (layoutItem[11] !== null) dc.drawImage(layoutItem[11], layoutItem[2], layoutItem[3], layoutItem[4] - layoutItem[2] - 2, layoutItem[5] - layoutItem[3] - 2)
 
                 // Draw the labels
                 if (system.drawLabels && !system.showHelp) {
@@ -844,12 +905,10 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
                     dc.stroke()
                 }
 
-                if (layoutItem[11] !== null) dc.drawImage(layoutItem[11], layoutItem[2], layoutItem[3], layoutItem[4] - layoutItem[2], layoutItem[5] - layoutItem[3])
-
                 if (system.activeGroup !== null && layoutItem[9] === system.activeGroup && mouse.selection[9] === layoutItem[9]) {
                     if (mouse.selection[0] === layoutItem[0]) dc.fillStyle = design.itemSelectionColor[1]
                     else dc.fillStyle = design.itemSelectionColor[0]
-
+                    
                     dc.fillRect(layoutItem[2], layoutItem[3], layoutItem[4] - layoutItem[2], layoutItem[5] - layoutItem[3])
                 } else if (mouse.selection[0] === layoutItem[0]) {
                     dc.fillStyle = design.itemSelectionColor[0]
@@ -859,9 +918,31 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
                     dc.fillRect(layoutItem[2], layoutItem[3], layoutItem[4] - layoutItem[2], layoutItem[5] - layoutItem[3])
                 }
 
+                // Draw resizes and image if present
+                if (system.drawResizers && mouse.selection === layoutItem) {
+                    if (layoutItem[11] !== null) dc.drawImage(layoutItem[11], layoutItem[2], layoutItem[3], layoutItem[4] - layoutItem[2], layoutItem[5] - layoutItem[3])
+
+                    for (let index = 0; index < design.resizers['start'].length; ++index) {
+                        let startX = design.resizers['start'][index][0] === 0 ? layoutItem[2] : layoutItem[4]
+                        let startY = design.resizers['start'][index][1] === 0 ? layoutItem[3] : layoutItem[5]
+
+                        dc.fillStyle = design.resizeCorners[0]
+                        dc.beginPath()
+                        for (let coordinate of design.resizers['coords'][index]) dc.lineTo(startX + coordinate[0], startY + coordinate[1])
+                        dc.closePath()
+                        dc.fill()
+
+                        if (mouse.selection !== null && dc.isPointInPath(mouse.x, mouse.y)) {
+                            dc.fillStyle = design.resizeCorners[1]
+                            dc.beginPath()
+                            for (let coordinate of design.resizers['coords'][index]) dc.lineTo(startX + coordinate[0], startY + coordinate[1])
+                            dc.closePath()
+                            dc.fill()
+                        }
+                    }
+                }
+                
                 // Draw the labels
-
-
                 if (system.drawLabels) {
                     let centerX = layoutItem[2] + ((layoutItem[4] - layoutItem[2]) * 0.5)
                     let centerY = layoutItem[3] + ((layoutItem[5] - layoutItem[3]) * 0.5)
@@ -887,6 +968,8 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
                     dc.fillText((layoutItem[4] - layoutItem[2]).toFixed(0) + 'x' + (layoutItem[5] - layoutItem[3]).toFixed(0) + 'px', centerX, centerY)
                     dc.fillText('(' + layoutItem[2].toFixed(0) + ', ' + layoutItem[3].toFixed(0) + ')', centerX, centerY + 25)
                 }
+                
+                
             }
         }
     }
@@ -1129,7 +1212,24 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
             dc.fillText(mirror[item], canvas.width * 0.25, (item * 21) + offsetY)
         }
 
-        offsetY += mirror.length * 22 + 50
+        offsetY += mirror.length * 22 + 70
+
+        dc.font = 'Bold 1.25em sans'
+        dc.fillText('__ Images _____________________________________________________________________________________', canvas.width * 0.25, offsetY - 32)
+
+        let images = [
+            'Image can be dragged and dropped into the canvas area. To insert an image, create and select a',
+            'container and drag and drop the desired image (JPG, PNG, GIF) from the desktop to the application.',
+            '',
+            'In order to see the image you have to deselect the container, because highlighting hides the image.'
+        ]
+
+        dc.font = 'Normal 1em sans'
+        for (let item in images) {
+            dc.fillText(images[item], canvas.width * 0.25, (item * 21) + offsetY)
+        }
+
+        offsetY += images.length * 22 + 70
 
         dc.font = 'Bold 1.25em sans'
         dc.fillText('Find more @ https://github.com/jrie/ReLayX', canvas.width * 0.25, offsetY - 32)
@@ -1227,7 +1327,7 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
         mouse.x = evt.clientX - mouse.offsetX + system.scrollX - canvas.offsetTop
         mouse.y = evt.clientY - mouse.offsetY + system.scrollY - canvas.offsetLeft
 
-        if (mouse.currentAction === 'dragContainer' || (mouse.currentAction === 'dragGroup' && system.activeGroup === null)) {
+        if (mouse.currentAction === 'dragContainer' || (system.activeGroup === null && mouse.currentAction === 'dragGroup')) {
             mouse.selection[2] += mouse.x - mousePreviousX
             mouse.selection[3] += mouse.y - mousePreviousY
             mouse.selection[4] += mouse.x - mousePreviousX
@@ -1239,7 +1339,7 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
                 mouse.selection[4] = Math.round(mouse.selection[4] / system.gridX) * system.gridX
                 mouse.selection[5] = Math.round(mouse.selection[5] / system.gridY) * system.gridY
             }
-        } else if (mouse.currentAction === 'dragGroup' && system.activeGroup !== null) {
+        } else if (system.activeGroup !== null && mouse.currentAction === 'dragGroup') {
             let mX = mouse.x - mousePreviousX
             let mY = mouse.y - mousePreviousY
 
@@ -1258,6 +1358,44 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
                         layoutItem[5] = Math.round(layoutItem[5] / system.gridY) * system.gridY
                     }
                 }
+            }
+        } else if (mouse.selection !== null && mouse.currentAction === 'resizeCorner' && mouse.hasCorner !== null) {
+            // Check resizing and resizing boundaries
+            if (mouse.hasCorner[0] === 0 && mouse.hasCorner[1] === 0) {
+                // Top left
+                mouse.selection[2] = mouse.x - mouse.hasCornerPx[0]
+                mouse.selection[3] = mouse.y - mouse.hasCornerPx[1]
+             
+                if (mouse.selection[4] - mouse.selection[2] < 50) mouse.selection[2] = mouse.selection[4] - 50
+                if (mouse.selection[5] - mouse.selection[3] < 50) mouse.selection[3] = mouse.selection[5] - 50
+            } else if (mouse.hasCorner[0] === 1 && mouse.hasCorner[1] === 0) {
+                // Top Right
+                mouse.selection[4] = mouse.x - mouse.hasCornerPx[0]
+                mouse.selection[3] = mouse.y - mouse.hasCornerPx[1]
+
+                if (mouse.selection[4] - mouse.selection[2] < 50) mouse.selection[4] = mouse.selection[2] + 50
+                if (mouse.selection[5] - mouse.selection[3] < 50) mouse.selection[3] = mouse.selection[5] - 50
+            } else if (mouse.hasCorner[0] === 0 && mouse.hasCorner[1] === 1) {
+                // Bottom Left
+                mouse.selection[2] = mouse.x - mouse.hasCornerPx[0]
+                mouse.selection[5] = mouse.y - mouse.hasCornerPx[1]
+
+                if (mouse.selection[4] - mouse.selection[2] < 50) mouse.selection[2] = mouse.selection[4] - 50
+                if (mouse.selection[5] - mouse.selection[3] < 50) mouse.selection[5] = mouse.selection[3] + 50
+            } else {
+                // Bottom right
+                mouse.selection[4] = mouse.x - mouse.hasCornerPx[0]
+                mouse.selection[5] = mouse.y - mouse.hasCornerPx[1]
+
+                if (mouse.selection[4] - mouse.selection[2] < 50) mouse.selection[4] = mouse.selection[2] + 50
+                if (mouse.selection[5] - mouse.selection[3] < 50) mouse.selection[5] = mouse.selection[3] + 50
+            }
+
+            if (mouse.snapToGrid) {
+                mouse.selection[2] = Math.round(mouse.selection[2] / system.gridX) * system.gridX
+                mouse.selection[3] = Math.round(mouse.selection[3] / system.gridY) * system.gridY
+                mouse.selection[4] = Math.round(mouse.selection[4] / system.gridX) * system.gridX
+                mouse.selection[5] = Math.round(mouse.selection[5] / system.gridY) * system.gridY
             }
         }
     }
@@ -1500,8 +1638,6 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
             }
         }
 
-
-
         if (evt.keyCode === 16) {
             // Shift key snapping
             mouse.snapToGrid = true
@@ -1530,7 +1666,6 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
             return
         } else if (evt.keyCode === 187 || evt.keyCode === 107) {
             // Plus sign on keyboard or plus on numpad
-            // id, designElementName, x, y, xEnd, yEnd, border, padding, margin, groupIndex
             if (mouse.selection === null) return
             else {
                 let targetIndex = 0
@@ -1757,11 +1892,11 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
             // C key starts a copy
             if (mouse.selection !== null) {
                 system.copyItem = mouse.selection
+                lg('Taking a copy of layout item: ' + system.copyItem[0])
             } else {
-                system.drawCorners = !system.drawCorners
-                lg('Switching hot corner display ' + (system.drawCorners ? 'on' : 'off'))
+                system.drawResizers = !system.drawResizers
+                lg('Switching hot corner display ' + (system.drawResizers ? 'on' : 'off'))
             }
-            lg('Taking a copy of layout item: ' + system.copyItem[0])
         } else if (evt.keyCode === 86) {
             // V key create a copy at cursor location
             if (system.copyItem !== null) {
