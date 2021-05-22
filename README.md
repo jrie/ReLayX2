@@ -15,7 +15,9 @@ This project is based on "ReLayX" which was initially written for fun of Javascr
 
 `[Control]` cancels ongoing action or when grouping/ungrouping items
 
-`[Shift]` snaps to grid when drawing selection, moving an item (click and drag) and mirroring
+`[Shift]` snaps to grid when drawing selection, moving an item (click and drag) and mirroring and also on resizing
+
+`[Shift + I]` Toggles image display on and off
 
 `[Left click and drag movement]` Moves a single item or a single item of a group
 
