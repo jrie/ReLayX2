@@ -1665,7 +1665,6 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
                         let image = new Image()
                         if (storageItemData[11].startsWith('data:')) image.src = storageItemData[11].replace(/\|\|\|/gm, ',')
                         else image.src = storageItemData[11]
-                        console.log(image.src)
                         
                         storageItemData[11] = image
                         continue
