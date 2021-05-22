@@ -140,6 +140,7 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
     system.drawGrid = true
     system.drawHighlight = true
     system.drawResizers = true
+    system.drawImages = true
     system.copyItem = null
     system.mirrorHorizontal = true
     system.expandMode = 'border'
@@ -864,7 +865,7 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
 
                 dc.fillRect(layoutItem[2], layoutItem[3], layoutItem[4] - layoutItem[2], layoutItem[5] - layoutItem[3])
 
-                if (layoutItem[11] !== null) dc.drawImage(layoutItem[11], layoutItem[2], layoutItem[3], layoutItem[4] - layoutItem[2] - 2, layoutItem[5] - layoutItem[3] - 2)
+                if (system.drawImages && layoutItem[11] !== null) dc.drawImage(layoutItem[11], layoutItem[2], layoutItem[3], layoutItem[4] - layoutItem[2], layoutItem[5] - layoutItem[3])
 
                 // Draw the labels
                 if (system.drawLabels && !system.showHelp) {
@@ -920,7 +921,7 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
 
                 // Draw resizes and image if present
                 if (system.drawResizers && mouse.selection === layoutItem) {
-                    if (layoutItem[11] !== null) dc.drawImage(layoutItem[11], layoutItem[2], layoutItem[3], layoutItem[4] - layoutItem[2], layoutItem[5] - layoutItem[3])
+                    if (system.drawImages && layoutItem[11] !== null) dc.drawImage(layoutItem[11], layoutItem[2], layoutItem[3], layoutItem[4] - layoutItem[2], layoutItem[5] - layoutItem[3])
 
                     for (let index = 0; index < design.resizers['start'].length; ++index) {
                         let startX = design.resizers['start'][index][0] === 0 ? layoutItem[2] : layoutItem[4]
@@ -1872,7 +1873,10 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
                 return
             }
         } else if (evt.keyCode === 73) {
-            system.showHelp = !system.showHelp
+            if (system.shiftPressed) {
+                system.drawImages = !system.drawImages
+                lg('Image display is ' + (system.drawImages ? 'enabled' : 'disabled'))
+            } else system.showHelp = !system.showHelp
             return
         } else if (evt.keyCode === 85) {
             system.showHelpNote = !system.showHelpNote
