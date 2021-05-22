@@ -805,14 +805,7 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
                 dc.fillRect(layoutItem[2], layoutItem[3], layoutItem[4] - layoutItem[2], layoutItem[5] - layoutItem[3])
 
                 if (layoutItem[11] !== null)  {
-                    try {
-                        // Try to draw the image
-                        dc.drawImage(layoutItem[11], layoutItem[2], layoutItem[3], layoutItem[4] - layoutItem[2] - 2, layoutItem[5] - layoutItem[3] - 2)
-                    } catch(err) {
-                        // If there is an error drawing, drop the image
-                        lg('Error with a image ressource. Dropped image.')
-                        layoutItem[11] = null
-                    }
+                    dc.drawImage(layoutItem[11], layoutItem[2], layoutItem[3], layoutItem[4] - layoutItem[2] - 2, layoutItem[5] - layoutItem[3] - 2)
                 }
 
                 // Draw the labels
@@ -826,8 +819,8 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
                     let textWidth = (dc.measureText(layoutItem[10]).width * 0.5);
                     if (textWidth !== 0) textWidth += 6
 
-                    let textSizes = (dc.measureText((layoutItem[4] - layoutItem[2]) + 'x' + (layoutItem[5] - layoutItem[3]) + 'px').width * 0.5) + 6
-                    let textCoords = (dc.measureText('(' + layoutItem[2] + ', ' + layoutItem[3] + ')').width * 0.5) + 6
+                    let textSizes = (dc.measureText((layoutItem[4] - layoutItem[2]).toFixed(0) + 'x' + (layoutItem[5] - layoutItem[3]).toFixed(0) + 'px').width * 0.5) + 6
+                    let textCoords = (dc.measureText('(' + layoutItem[2].toFixed(0) + ', ' + layoutItem[3].toFixed(0) + ')').width * 0.5) + 6
 
                     dc.fillStyle = design.contentInputBackground
                     dc.fillRect(centerX - textWidth, centerY - 44, textWidth * 2, 24)
@@ -836,8 +829,8 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
 
                     dc.fillStyle = design.labelColor
                     dc.fillText(layoutItem[10], centerX, centerY - 28)
-                    dc.fillText((layoutItem[4] - layoutItem[2]) + 'x' + (layoutItem[5] - layoutItem[3]) + 'px', centerX, centerY)
-                    dc.fillText('(' + layoutItem[2] + ', ' + layoutItem[3] + ')', centerX, centerY + 25)
+                    dc.fillText((layoutItem[4] - layoutItem[2]).toFixed(0) + 'x' + (layoutItem[5] - layoutItem[3]).toFixed(0) + 'px', centerX, centerY)
+                    dc.fillText('(' + layoutItem[2].toFixed(0) + ', ' + layoutItem[3].toFixed(0) + ')', centerX, centerY + 25)
                 }
             }
         } else {
@@ -883,8 +876,8 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
                     let textWidth = (dc.measureText(layoutItem[10]).width * 0.5);
                     if (textWidth !== 0) textWidth += 6
                     
-                    let textSizes = (dc.measureText((layoutItem[4] - layoutItem[2]) + 'x' + (layoutItem[5] - layoutItem[3]) + 'px').width * 0.5) + 6
-                    let textCoords = (dc.measureText('(' + layoutItem[2] + ', ' + layoutItem[3] + ')').width * 0.5) + 6
+                    let textSizes = (dc.measureText((layoutItem[4] - layoutItem[2]).toFixed(0) + 'x' + (layoutItem[5] - layoutItem[3]).toFixed(0) + 'px').width * 0.5) + 6
+                    let textCoords = (dc.measureText('(' + layoutItem[2].toFixed(0) + ', ' + layoutItem[3].toFixed(0) + ')').width * 0.5) + 6
                     
 
                     dc.fillStyle = design.contentInputBackground
@@ -894,8 +887,8 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
 
                     dc.fillStyle = design.labelColor
                     dc.fillText(layoutItem[10], centerX, centerY - 28)
-                    dc.fillText((layoutItem[4] - layoutItem[2]) + 'x' + (layoutItem[5] - layoutItem[3]) + 'px', centerX, centerY)
-                    dc.fillText('(' + layoutItem[2] + ', ' + layoutItem[3] + ')', centerX, centerY + 25)
+                    dc.fillText((layoutItem[4] - layoutItem[2]).toFixed(0) + 'x' + (layoutItem[5] - layoutItem[3]).toFixed(0) + 'px', centerX, centerY)
+                    dc.fillText('(' + layoutItem[2].toFixed(0) + ', ' + layoutItem[3].toFixed(0) + ')', centerX, centerY + 25)
                 }
             }
         }
@@ -1630,11 +1623,11 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
         for (item = 0; item < system.layoutSize; item++) {
             if (system.layoutData[item][11] !== null)  {
                 let temp = system.layoutData[item][11]
-                system.layoutData[item][11] = system.layoutData[item][11].src
+                system.layoutData[item][11] = system.layoutData[item][11].src.toString()
                 system.storage.setItem(layoutSubKey + item, system.layoutData[item])
                 system.layoutData[item][11] = temp
             } else {
-                system.storage.setItem(layoutSubKey + item, system.layoutData[item])
+                system.storage.setItem(layoutSubKey + item, system.layoutData[item].replace(/,/g, '||'))
             }
         }
         system.storage.setItem(layoutSubKey + item, false)
@@ -1670,7 +1663,9 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
                     // Handle image data specially
                     if (key === 11 && storageItemData[11] !== null) {
                         let image = new Image()
-                        image.src = storageItemData[11]
+                        if (storageItemData[11].startsWith('data:')) image.src = storageItemData[11] + ',' + storageItemData[12]
+                        else image.src = storageItemData[11]
+                        
                         storageItemData[11] = image
                         continue
                     }
