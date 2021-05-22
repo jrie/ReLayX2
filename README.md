@@ -44,6 +44,8 @@ This can be changed by pressing `[W]` or `[Q]` for each axis independently
 
 `[Backspace]` Clears all saved data
 
-`[L]` Create or rename a labeled item if selected, this works only in the browser at the moment.
-If nothing is selected, turns label rendering on or off.
+`[L]` Create or rename a labeled item if selected. If nothing is selected, turns label rendering on or off.
 
+### Image import
+
+Images can be imported by using drag an drop. In order to import a image, select a container where the image should become placed and drag and drop the desired image into the window. In order to see the image, you have then to deselect the container (active selection overrides the image display for the item).
