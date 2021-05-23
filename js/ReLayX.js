@@ -151,6 +151,7 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
     system.notifications = []
     system.showHelpNote = true
     system.shiftPressed = false
+    system.ctrlPressed = false
     system.storage = window.localStorage || null
     system.drawLabels = true
     system.displayBrowserGrid = false
@@ -1638,11 +1639,13 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
                 lg('Use labels is set to ' + system.drawLabels)
             }
         }
-
-        if (evt.keyCode === 16) {
+        if (evt.keyCode === 17) {
+            // Control key
+            system.ctrlPressed = true
+            return
+        } else if (evt.keyCode === 16) {
             // Shift key snapping
             mouse.snapToGrid = true
-            //mouse.currentAction = null
             system.shiftPressed = true
             return
         } else if (evt.keyCode === 89 || evt.keyCode === 90) {
@@ -1828,6 +1831,10 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
             return
         }
 
+        if (evt.keyCode === 17) {
+            system.ctrlPressed = false
+            return
+        }
         if (evt.keyCode === 16) {
             mouse.snapToGrid = false
             system.shiftPressed = false
@@ -1861,7 +1868,7 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
             }
         }
 
-        if (system.shiftPressed && evt.keyCode === 8) {#
+        if (system.shiftPressed && evt.keyCode === 8) {
             // Backspace key
             evt.preventDefault()
             if (system.storage !== null) {
