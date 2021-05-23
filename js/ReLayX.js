@@ -1861,7 +1861,8 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
             }
         }
 
-        if (system.shiftPressed && evt.keyCode === 8) {
+        if (system.shiftPressed && evt.keyCode === 8) {#
+            // Backspace key
             evt.preventDefault()
             if (system.storage !== null) {
                 system.storage.clear()
@@ -1869,12 +1870,14 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
                 return
             }
         } else if (evt.keyCode === 73) {
+            // I key
             if (system.shiftPressed) {
                 system.drawImages = !system.drawImages
                 lg('Image display is ' + (system.drawImages ? 'enabled' : 'disabled'))
             } else system.showHelp = !system.showHelp
             return
         } else if (evt.keyCode === 85) {
+            // U key
             system.showHelpNote = !system.showHelpNote
             return
         } else if (evt.keyCode === 17) {
@@ -1910,11 +1913,8 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
         } else if (evt.keyCode === 32) {
             // Space key up, turn repeat action off
             if (mouse.currentAction === 'mirrorSelection') {
-                if (mouse.selection === null) {
-                    mouse.currentAction = 'drawing'
-                } else {
-                    mouse.currentAction = 'selected'
-                }
+                if (mouse.selection === null) mouse.currentAction = 'drawing'
+                else mouse.currentAction = 'selected'
             }
         } else if (evt.keyCode === 88) {
             // X key, horizontal/vertical repeation
