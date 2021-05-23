@@ -1745,13 +1745,13 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
 
         let item = 0
         for (item = 0; item < system.layoutSize; item++) {
-            if (system.layoutData[item][11] !== null && system.layoutData[item][11] !== '') {
+            if (system.layoutData[item][11] !== null) {
                 let temp = system.layoutData[item][11]
                 system.layoutData[item][11] = system.layoutData[item][11].src.toString().replace(/\,/g, '|||')
-                system.storage.setItem(layoutSubKey + item, system.layoutData[item])
+                system.storage.setItem(layoutSubKey + item, system.layoutData[item].join('|#|'))
                 system.layoutData[item][11] = temp
             } else {
-                system.storage.setItem(layoutSubKey + item, system.layoutData[item])
+                system.storage.setItem(layoutSubKey + item, system.layoutData[item].join('|#|'))
             }
         }
         system.storage.setItem(layoutSubKey + item, false)
@@ -1781,16 +1781,19 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
 
             while (system.storage.getItem(layoutSubKey + layoutIndex) !== null && system.storage.getItem(layoutSubKey + layoutIndex) !== 'false') {
 
-                let storageItemData = system.storage.getItem(layoutSubKey + layoutIndex).split(',')
+                let storageItemData = system.storage.getItem(layoutSubKey + layoutIndex).split('|#|')
                 for (let key = 0; key < storageItemData.length; key++) {
 
                     // Handle image data specially
-                    if (key === 11 && storageItemData[11] !== null && storageItemData[11] !== '') {
-                        let image = new Image()
-                        if (storageItemData[11].startsWith('data:')) image.src = storageItemData[11].replace(/\|\|\|/gm, ',')
-                        else image.src = storageItemData[11]
-
-                        storageItemData[11] = image
+                    if (key === 11) {
+                        if (storageItemData[11] === '') storageItemData[11] = null
+                        else {
+                            let image = new Image()
+                            if (storageItemData[11].startsWith('data:')) image.src = storageItemData[11].replace(/\|\|\|/gm, ',')
+                            else image.src = storageItemData[11]
+    
+                            storageItemData[11] = image
+                        }
                         continue
                     }
 
