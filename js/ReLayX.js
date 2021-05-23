@@ -1745,9 +1745,8 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
 
         let item = 0
         for (item = 0; item < system.layoutSize; item++) {
-            if (system.layoutData[item][11] !== null) {
+            if (system.layoutData[item][11] !== null && system.layoutData[item][11] !== '') {
                 let temp = system.layoutData[item][11]
-                console.log(temp)
                 system.layoutData[item][11] = system.layoutData[item][11].src.toString().replace(/\,/g, '|||')
                 system.storage.setItem(layoutSubKey + item, system.layoutData[item])
                 system.layoutData[item][11] = temp
