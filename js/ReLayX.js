@@ -175,9 +175,10 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
     mouse.currentAction = null
     mouse.snapToGrid = false
     mouse.current = 'default'
+    mouse.showCursor = false
     mouse.cursorAt = [0, 0, 0]
     mouse.cursorText = ''
-    mouse.cursorBlinkRate = 40
+    mouse.cursorBlinkRate = 28
     mouse.cursorBlink = true
     mouse.hasCorner = null
     mouse.hasCornerPx = [0, 0]
@@ -1304,7 +1305,10 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
             // Draw the input cursor in demand
             if (++mouse.cursorBlink === mouse.cursorBlinkRate) {
                 mouse.cursorBlink = 0;
-            } else {
+                mouse.showCursor = !mouse.showCursor
+            }
+            
+            if (mouse.showCursor) {
                 dc.beginPath();
                 dc.moveTo(mouse.cursorAt[0], mouse.cursorAt[1]);
                 dc.lineTo(mouse.cursorAt[0], mouse.cursorAt[1] + 12);
@@ -1627,7 +1631,7 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
         }
 
         if (evt.keyCode === 76) {
-            if (mouse.selection !== null) {
+            if (mouse.selection !== null && system.drawLabels) {
                 mouse.currentAction = 'inputText'
                 dc.font = 'Normal 0.75em sans'
                 mouse.cursorAt[0] = mouse.selection[2] + ((mouse.selection[4] - mouse.selection[2]) * 0.5) + (dc.measureText(mouse.selection[10]).width * 0.5)
