@@ -866,8 +866,9 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
                 }
 
                 dc.fillRect(layoutItem[2], layoutItem[3], layoutItem[4] - layoutItem[2], layoutItem[5] - layoutItem[3])
-
-                if (system.drawImages && layoutItem[11] !== null) dc.drawImage(layoutItem[11], layoutItem[2], layoutItem[3], layoutItem[4] - layoutItem[2], layoutItem[5] - layoutItem[3])
+                if (system.drawImages && layoutItem[11] !== null && layoutItem[11] !== '') {
+                    dc.drawImage(layoutItem[11], layoutItem[2], layoutItem[3], layoutItem[4] - layoutItem[2], layoutItem[5] - layoutItem[3])
+                }
 
                 // Draw the labels
                 if (system.drawLabels && !system.showHelp) {
@@ -923,7 +924,7 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
 
                 // Draw resizes and image if present
                 if (system.drawResizers && mouse.selection === layoutItem) {
-                    if (system.drawImages && layoutItem[11] !== null) dc.drawImage(layoutItem[11], layoutItem[2], layoutItem[3], layoutItem[4] - layoutItem[2], layoutItem[5] - layoutItem[3])
+                    if (system.drawImages && layoutItem[11] !== null && layoutItem[11] !== '') dc.drawImage(layoutItem[11], layoutItem[2], layoutItem[3], layoutItem[4] - layoutItem[2], layoutItem[5] - layoutItem[3])
 
                     for (let index = 0; index < design.resizers['start'].length; ++index) {
                         let startX = design.resizers['start'][index][0] === 0 ? layoutItem[2] : layoutItem[4]
@@ -1746,6 +1747,7 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
         for (item = 0; item < system.layoutSize; item++) {
             if (system.layoutData[item][11] !== null) {
                 let temp = system.layoutData[item][11]
+                console.log(temp)
                 system.layoutData[item][11] = system.layoutData[item][11].src.toString().replace(/\,/g, '|||')
                 system.storage.setItem(layoutSubKey + item, system.layoutData[item])
                 system.layoutData[item][11] = temp
@@ -1784,7 +1786,7 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
                 for (let key = 0; key < storageItemData.length; key++) {
 
                     // Handle image data specially
-                    if (key === 11 && storageItemData[11] !== null) {
+                    if (key === 11 && storageItemData[11] !== null && storageItemData[11] !== '') {
                         let image = new Image()
                         if (storageItemData[11].startsWith('data:')) image.src = storageItemData[11].replace(/\|\|\|/gm, ',')
                         else image.src = storageItemData[11]
@@ -1986,7 +1988,7 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
         for (let fileItem of evt.dataTransfer.files) {
             if (fileItem.type === 'image/jpeg' || fileItem.type === 'image/jpg' || fileItem.type === 'image/png' || fileItem.type === 'image/gif') {
                 if (fileItem.path !== undefined) {
-                    let imageMap = new Image(fileItem)
+                    let imageMap = new Image()
                     imageMap.addEventListener('load', addImageToLayout)
                     imageMap.src = fileItem.path
                 } else {
