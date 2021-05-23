@@ -44,7 +44,7 @@ This can be changed by pressing `[W]` or `[Q]` for each axis independently
 
 `[1 to 9]` - Loads the design from slot 1 to 9, `[Shift + 1 ... 9]` saves a design to slot 1 to 9
 
-`[Backspace]` Clears all saved data
+`[Shift + Backspace]` Clears all saved data
 
 `[L]` Create or rename a labeled item if selected. If nothing is selected, turns label rendering on or off.
 
