@@ -16,11 +16,11 @@ function getDesign(designName, width, height) {
             design.containerElement = ['solid', ['#9a9a9a']]
             design.containerBorderColor = 'rgba(0,0,0, 0.5)'
             design.notificationColor = '#000'
-            design.labelColor = '#000'
+            design.labelColor = '#ccc'
             design.helpTextColor = '#000'
 
             // Resizers
-            design.resizeCorners = ['#222', '#fff']
+            design.resizeCorners = ['#222', '#fff', '#ccc']
             // Hot corners
             design.resizers = {
                 'coords': [
@@ -58,7 +58,7 @@ function getDesign(designName, width, height) {
             design.helpTextColor = '#aeaeae'
 
             // Resizers
-            design.resizeCorners = ['#111', '#ae0']
+            design.resizeCorners = ['#111', '#ae0', '#ccc']
             // Hot corners
             design.resizers = {
                 'coords': [
@@ -933,6 +933,9 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
                         for (let coordinate of design.resizers['coords'][index]) dc.lineTo(startX + coordinate[0], startY + coordinate[1])
                         dc.closePath()
                         dc.fill()
+                        dc.lineWidth = 1
+                        dc.strokeStyle = design.resizeCorners[2]
+                        dc.stroke()
 
                         if (mouse.selection !== null && dc.isPointInPath(mouse.x, mouse.y)) {
                             dc.fillStyle = design.resizeCorners[1]
