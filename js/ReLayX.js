@@ -1128,7 +1128,7 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
             '[E] zeros/erases the grid spacing values for both mirroring axis',
             '[+ or -] Increase or decrase the border on a single item or a group of items',
             '[1 to 9] - Loads the design from slot 1 to 9, [SHIFT + 1 ... 9] saves a design to slot 1 to 9',
-            '[BACKSPACE] Clears all saved data',
+            '[Shift + BACKSPACE] Clears all saved data',
             '[L] Create or rename a labeled item if selected, if nothing is selected, turns label rendering on or off'
         ]
 
@@ -1818,10 +1818,6 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
         return
     }
 
-    function clearDesigns() {
-        Storage.clear()
-    }
-
     function handleKeyboardUp(evt) {
         if (evt.target.nodeName === 'INPUT' || evt.target.nodeName === 'TEXTAREA') {
             return
@@ -1865,7 +1861,7 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
             }
         }
 
-        if (evt.keyCode === 8) {
+        if (system.shiftPressed && evt.keyCode === 8) {
             evt.preventDefault()
             if (system.storage !== null) {
                 system.storage.clear()
