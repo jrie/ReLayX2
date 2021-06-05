@@ -1242,6 +1242,7 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
             '[Q / W] decrease / increase mirror grid spacing on selected axis - used with [SPACE] and [X]',
             '[E] zeros/erases the grid spacing values for both mirroring axis',
             '[+ or -] Increase or decrase the border on a single item or a group of items',
+            '[Shift + Arrow up, down, left or right] Moves the current selected container up, down, left or right',
             '[1 to 9] - Loads the design from slot 1 to 9, [SHIFT + 1 ... 9] saves a design to slot 1 to 9',
             '[Shift + BACKSPACE] Clears all saved data',
             '[L] Create or rename a labeled item if selected, if nothing is selected, turns label rendering on or off'
