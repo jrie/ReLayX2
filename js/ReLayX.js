@@ -78,6 +78,7 @@ function getDesign(designName, width, height) {
         case 'firebird':
         default:
             design.background = [['rect'], ['solid'], [['#6a0000']], [[0, 0, width, height]]]
+            design.defaultMouse = ['#fff', '#000', 'round', 'line', [0, 0, 1, 0, 12, 10, 12, 15, 5, 15]]
             design.dragMoveMouse = ['#fff', '#000', 'round', 'line', [
                 -0.5, -8.5,
                 -2.5, -5.5,
