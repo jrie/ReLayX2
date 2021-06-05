@@ -1349,7 +1349,7 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
         offsetY += images.length * 22 + 70
 
         dc.font = 'Bold 1.25em sans'
-        dc.fillText('Find more @ https://github.com/jrie/ReLayX', canvas.width * 0.25, offsetY - 32)
+        dc.fillText('Find more @ https://github.com/jrie/ReLayX2', canvas.width * 0.25, offsetY - 32)
     }
 
     function renderNotifications() {
