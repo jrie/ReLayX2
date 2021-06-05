@@ -215,6 +215,7 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
     system.drawResizers = true
     system.drawImages = true
     system.copyItem = null
+    system.keyMap = {}
     system.mirrorHorizontal = true
     system.expandMode = 'border'
     system.spaceGridX = 0
@@ -236,7 +237,7 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
 
     mouse.x = 0
     mouse.y = 0
-    mouse.threshold = 25
+    mouse.threshold = 50
 
     mouse.offsetX = system.scrollX
     mouse.offsetY = system.scrollY
@@ -249,13 +250,13 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
     mouse.currentAction = null
     mouse.snapToGrid = false
     mouse.showCursor = false
+    mouse.highlightSelection = false
     mouse.cursorAt = [0, 0, 0]
     mouse.cursorText = ''
     mouse.cursorBlinkRate = 28
     mouse.cursorBlink = true
     mouse.hasCorner = null
     mouse.hasCornerPx = [0, 0]
-
 
     // Helper functions
     // Create and return a copy of an array item
@@ -834,7 +835,6 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
                 let offsetY = 0
 
                 if (containerY > mouse.threshold) {
-
                     if (system.spaceGridY > 0) offsetGridY = system.spaceGridY
                     else offsetGridY = mStartY - system.gridStartY
 
@@ -1053,6 +1053,15 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
                             }
                         }
                     }
+                }
+
+                if (mouse.highlightSelection && mouse.selection[0] === layoutItem[0]) {
+                    dc.lineWidth = 3
+                    dc.strokeStyle = design.itemSelectionColor
+                    
+                    dc.beginPath()
+                    dc.rect(mouse.selection[2], mouse.selection[3], mouse.selection[4] - mouse.selection[2], mouse.selection[5] - mouse.selection[3])
+                    dc.stroke()
                 }
                 
                 // Draw the labels
@@ -1519,14 +1528,7 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
     }
 
     function handleInputFieldInput(evt) {
-        // Dont accept user input if not targetted
-        if (evt.target.nodeName === 'input' || evt.target.nodeName === 'textarea') {
-            return
-        }
-
-        if (mouse.selection === null) {
-            return
-        }
+        if (mouse.selection === null) return
 
         if (evt.keyCode === 9) {
             // Tab key pressed
@@ -1672,59 +1674,57 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
     }
 
     function handleKeyboardDown(evt) {
-        if (evt.target.nodeName === 'INPUT' || evt.target.nodeName === 'TEXTAREA') {
-            return
-        }
-
         if (mouse.currentAction === 'inputText') {
             evt.preventDefault()
             return
         }
 
         if (system.shiftPressed && mouse.selection !== null) {
-            switch (evt.keyCode) {
-                case 38:
-                    // Arrow key up
-                    if (mouse.selection[3] > system.gridX) {
-                        mouse.selection[3] -= system.gridX
-                        mouse.selection[5] -= system.gridX
-                    } else {
-                        mouse.selection[5] = mouse.selection[5] - mouse.selection[3]
-                        mouse.selection[3] = 0
-                    }
-                    break
-                case 40:
-                    // Arrow key down
-                    if (mouse.selection[5] < system.height) {
-                        mouse.selection[3] += system.gridX
-                        mouse.selection[5] += system.gridX
-                    } else {
-                        mouse.selection[3] = system.height - (mouse.selection[5] - mouse.selection[3])
-                        mouse.selection[5] = system.height
-                    }
-                    break
-                case 37:
-                    // Arrow key left
-                    if (mouse.selection[2] > system.gridY) {
-                        mouse.selection[2] -= system.gridY
-                        mouse.selection[4] -= system.gridY
-                    } else {
-                        mouse.selection[4] = mouse.selection[4] - mouse.selection[2]
-                        mouse.selection[2] = 0
-                    }
-                    break
-                case 39:
-                    // Arrow key right
-                    if (mouse.selection[4] < system.width) {
-                        mouse.selection[2] += system.gridY
-                        mouse.selection[4] += system.gridY
-                    } else {
-                        mouse.selection[2] = system.width - (mouse.selection[4] - mouse.selection[2])
-                        mouse.selection[4] = system.width
-                    }
-                    break
-                default:
-                    return
+            evt.preventDefault()
+            evt.stopPropagation()
+            system.keyMap[evt.keyCode] = true
+            if (system.keyMap['38'] !== undefined) {
+                // Arrow key up
+                if (mouse.selection[3] > system.gridX) {
+                    mouse.selection[3] -= system.gridX
+                    mouse.selection[5] -= system.gridX
+                } else {
+                    mouse.selection[5] = mouse.selection[5] - mouse.selection[3]
+                    mouse.selection[3] = 0
+                }
+            }
+            
+            if (system.keyMap['40'] !== undefined) {
+                // Arrow key down
+                if (mouse.selection[5] < system.height) {
+                    mouse.selection[3] += system.gridX
+                    mouse.selection[5] += system.gridX
+                } else {
+                    mouse.selection[3] = system.height - (mouse.selection[5] - mouse.selection[3])
+                    mouse.selection[5] = system.height
+                }
+            }
+            
+            if (system.keyMap['37'] !== undefined) {
+                // Arrow key left
+                if (mouse.selection[2] > system.gridY) {
+                    mouse.selection[2] -= system.gridY
+                    mouse.selection[4] -= system.gridY
+                } else {
+                    mouse.selection[4] = mouse.selection[4] - mouse.selection[2]
+                    mouse.selection[2] = 0
+                }
+            }
+            
+            if (system.keyMap['39'] !== undefined) {
+                // Arrow key right
+                if (mouse.selection[4] < system.width) {
+                    mouse.selection[2] += system.gridY
+                    mouse.selection[4] += system.gridY
+                } else {
+                    mouse.selection[2] = system.width - (mouse.selection[4] - mouse.selection[2])
+                    mouse.selection[4] = system.width
+                }
             }
 
             return
@@ -1990,10 +1990,6 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
     }
 
     function handleKeyboardUp(evt) {
-        if (evt.target.nodeName === 'INPUT' || evt.target.nodeName === 'TEXTAREA') {
-            return
-        }
-
         if (mouse.currentAction === 'inputText') {
             evt.preventDefault()
             return
@@ -2004,8 +2000,13 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
             system.ctrlPressed = false
             return
         }
-        
+
+        if (system.keyMap[evt.keyCode] !== undefined) { delete system.keyMap[evt.keyCode] }
+
         if (evt.keyCode === 16) {
+            // Shift key - grid snapping off
+            evt.preventDefault()
+            
             // Strg key
             mouse.snapToGrid = false
             system.shiftPressed = false
@@ -2029,7 +2030,7 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
 
             if (evt.keyCode === 68) {
                 system.displayBrowserGrid = !system.displayBrowserGrid
-                lg('Display browser grid set to ' + system.displayBrowserGrid)
+                lg('Display browser grid is ' + (system.displayBrowserGrid ? 'enabled' : 'disabled'))
                 return
             } else if (evt.keyCode === 71) {
                 if (system.currentDesign >= system.designNames.length - 1) system.currentDesign = 0
@@ -2068,10 +2069,6 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
         } else if (evt.keyCode === 17) {
             // Control key - cancels current action, for example selection or container creation
             mouse.currentAction = null
-        } else if (evt.keyCode === 16) {
-            // Shift key - grid snapping off
-            mouse.snapToGrid = false
-            return
         } else if (evt.keyCode === 71) {
             // G key toggles grid
             system.drawGrid = !system.drawGrid
@@ -2149,8 +2146,8 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
 
     function addImageToLayout(evt) {
         if (mouse.selection !== null) mouse.selection[11] = evt.target
-
         evt.target.removeEventListener('load', addImageToLayout)
+        mouse.highlightSelection = false
     }
 
     function importImage(evt) {
@@ -2177,12 +2174,19 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
 
     function allowImageDrop(evt) {
         evt.preventDefault()
+        mouse.highlightSelection = true
+    }
+
+    function removeImageDropdownHighlight(evt) {
+        evt.preventDefault()
+        mouse.highlightSelection = false
     }
 
     canvas.addEventListener('mousemove', handleMouseMove)
     canvas.addEventListener('mousedown', checkMouseDown)
     canvas.addEventListener('mouseup', checkMouseUp)
     canvas.addEventListener('drop', importImage)
+    canvas.addEventListener('dragleave', removeImageDropdownHighlight)
     canvas.addEventListener('dragover', allowImageDrop)
     document.addEventListener('keydown', handleKeyboardDown)
     document.addEventListener('keyup', handleKeyboardUp)
