@@ -88,11 +88,10 @@ function getDesign(designName, width, height) {
 // Main ReLayX
 let system = {}
 let mouse = {}
-function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, gridStart, gridEnd) {
+function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, gridEnd) {
 
     // General variables
     let canvas = document.getElementById(canvasItem)
-    let codePanel = document.getElementById(codeItem)
     let dc = canvas.getContext('2d')
 
     // Debug console shortcut
@@ -154,6 +153,7 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
     system.ctrlPressed = false
     system.storage = window.localStorage || null
     system.drawLabels = true
+    system.drawContainers = true
     system.displayBrowserGrid = false
     system.browserSpacingStart = 113
     system.browserSpacing = 113
@@ -865,7 +865,7 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
                     dc.stroke()
                 }
 
-                dc.fillRect(layoutItem[2], layoutItem[3], layoutItem[4] - layoutItem[2], layoutItem[5] - layoutItem[3])
+                if (system.drawContainers) dc.fillRect(layoutItem[2], layoutItem[3], layoutItem[4] - layoutItem[2], layoutItem[5] - layoutItem[3])
                 if (system.drawImages && layoutItem[11] !== null && layoutItem[11] !== '') {
                     dc.drawImage(layoutItem[11], layoutItem[2], layoutItem[3], layoutItem[4] - layoutItem[2], layoutItem[5] - layoutItem[3])
                 }
@@ -909,42 +909,45 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
                     dc.stroke()
                 }
 
-                if (system.activeGroup !== null && layoutItem[9] === system.activeGroup && mouse.selection[9] === layoutItem[9]) {
+                if (!system.drawContainers) if (system.drawImages && layoutItem[11] !== null && layoutItem[11] !== '') dc.drawImage(layoutItem[11], layoutItem[2], layoutItem[3], layoutItem[4] - layoutItem[2], layoutItem[5] - layoutItem[3])
+
+                if (system.drawContainers) {
+                    if (system.activeGroup !== null && layoutItem[9] === system.activeGroup && mouse.selection[9] === layoutItem[9]) {
                     if (mouse.selection[0] === layoutItem[0]) dc.fillStyle = design.itemSelectionColor[1]
                     else dc.fillStyle = design.itemSelectionColor[0]
                     
-                    dc.fillRect(layoutItem[2], layoutItem[3], layoutItem[4] - layoutItem[2], layoutItem[5] - layoutItem[3])
-                } else if (mouse.selection[0] === layoutItem[0]) {
-                    dc.fillStyle = design.itemSelectionColor[0]
-                    dc.fillRect(layoutItem[2], layoutItem[3], layoutItem[4] - layoutItem[2], layoutItem[5] - layoutItem[3])
-                } else {
-                    if (itemDesign[0] === 'solid') dc.fillStyle = itemDesign[1]
-                    dc.fillRect(layoutItem[2], layoutItem[3], layoutItem[4] - layoutItem[2], layoutItem[5] - layoutItem[3])
-                }
+                        dc.fillRect(layoutItem[2], layoutItem[3], layoutItem[4] - layoutItem[2], layoutItem[5] - layoutItem[3])
+                    } else if (mouse.selection[0] === layoutItem[0]) {
+                        dc.fillStyle = design.itemSelectionColor[0]
+                        dc.fillRect(layoutItem[2], layoutItem[3], layoutItem[4] - layoutItem[2], layoutItem[5] - layoutItem[3])
+                    } else {
+                        if (itemDesign[0] === 'solid') dc.fillStyle = itemDesign[1]
+                        dc.fillRect(layoutItem[2], layoutItem[3], layoutItem[4] - layoutItem[2], layoutItem[5] - layoutItem[3])
+                    }
 
-                // Draw resizes and image if present
-                if (system.drawResizers && mouse.selection === layoutItem) {
-                    if (system.drawImages && layoutItem[11] !== null && layoutItem[11] !== '') dc.drawImage(layoutItem[11], layoutItem[2], layoutItem[3], layoutItem[4] - layoutItem[2], layoutItem[5] - layoutItem[3])
+                    // Draw resizes and image if present
+                    if (system.drawResizers && mouse.selection === layoutItem) {
+                        if (system.drawImages && layoutItem[11] !== null && layoutItem[11] !== '') dc.drawImage(layoutItem[11], layoutItem[2], layoutItem[3], layoutItem[4] - layoutItem[2], layoutItem[5] - layoutItem[3])
+                        for (let index = 0; index < design.resizers['start'].length; ++index) {
+                            let startX = design.resizers['start'][index][0] === 0 ? layoutItem[2] : layoutItem[4]
+                            let startY = design.resizers['start'][index][1] === 0 ? layoutItem[3] : layoutItem[5]
 
-                    for (let index = 0; index < design.resizers['start'].length; ++index) {
-                        let startX = design.resizers['start'][index][0] === 0 ? layoutItem[2] : layoutItem[4]
-                        let startY = design.resizers['start'][index][1] === 0 ? layoutItem[3] : layoutItem[5]
-
-                        dc.fillStyle = design.resizeCorners[0]
-                        dc.beginPath()
-                        for (let coordinate of design.resizers['coords'][index]) dc.lineTo(startX + coordinate[0], startY + coordinate[1])
-                        dc.closePath()
-                        dc.fill()
-                        dc.lineWidth = 1
-                        dc.strokeStyle = design.resizeCorners[2]
-                        dc.stroke()
-
-                        if (mouse.selection !== null && dc.isPointInPath(mouse.x, mouse.y)) {
-                            dc.fillStyle = design.resizeCorners[1]
+                            dc.fillStyle = design.resizeCorners[0]
                             dc.beginPath()
                             for (let coordinate of design.resizers['coords'][index]) dc.lineTo(startX + coordinate[0], startY + coordinate[1])
                             dc.closePath()
                             dc.fill()
+                            dc.lineWidth = 1
+                            dc.strokeStyle = design.resizeCorners[2]
+                            dc.stroke()
+
+                            if (mouse.selection !== null && dc.isPointInPath(mouse.x, mouse.y)) {
+                                dc.fillStyle = design.resizeCorners[1]
+                                dc.beginPath()
+                                for (let coordinate of design.resizers['coords'][index]) dc.lineTo(startX + coordinate[0], startY + coordinate[1])
+                                dc.closePath()
+                                dc.fill()
+                            }
                         }
                     }
                 }
@@ -1843,12 +1846,22 @@ function relayx(canvasItem, codeItem, designName, width, height, gridX, gridY, g
         }
 
         if (evt.keyCode === 17) {
+            // Ctrl key
             system.ctrlPressed = false
             return
         }
+        
         if (evt.keyCode === 16) {
+            // Strg key
             mouse.snapToGrid = false
             system.shiftPressed = false
+            return
+        }
+
+        if (evt.keyCode === 84) {
+            // T key
+            system.drawContainers = !system.drawContainers
+            lg('Drawing containers ' + (system.drawContainers ? "enabled" : "disabled"))
             return
         }
 
