@@ -1,6 +1,6 @@
 {
   "name": "relayx",
-  "version": "0.1.1",
+  "version": "0.2.1",
   "description": "A (web)designer layout tool with a twist",
   "main": "main.js",
   "scripts": {
