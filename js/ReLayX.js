@@ -1684,6 +1684,7 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
         if (system.shiftPressed && mouse.selection !== null) {
             switch (evt.keyCode) {
                 case 38:
+                    // Arrow key up
                     if (mouse.selection[3] > system.gridX) {
                         mouse.selection[3] -= system.gridX
                         mouse.selection[5] -= system.gridX
@@ -1693,6 +1694,7 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
                     }
                     break
                 case 40:
+                    // Arrow key down
                     if (mouse.selection[5] < system.height) {
                         mouse.selection[3] += system.gridX
                         mouse.selection[5] += system.gridX
@@ -1702,6 +1704,7 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
                     }
                     break
                 case 37:
+                    // Arrow key left
                     if (mouse.selection[2] > system.gridY) {
                         mouse.selection[2] -= system.gridY
                         mouse.selection[4] -= system.gridY
@@ -1711,6 +1714,7 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
                     }
                     break
                 case 39:
+                    // Arrow key right
                     if (mouse.selection[4] < system.width) {
                         mouse.selection[2] += system.gridY
                         mouse.selection[4] += system.gridY
