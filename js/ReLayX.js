@@ -663,43 +663,41 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
             return
         }
 
-        if (system.drawContainers) {
-            for (let layoutItem of system.layoutData) {
-                // Draw hot resize corners and check for point in path
-                mouse.hasCorner = null
-                mouse.hasCornerPx = [0, 0]
-                for (let index = 0; index < design.resizers['start'].length; ++index) {
-                    let startX = design.resizers['start'][index][0] === 0 ? layoutItem[2] : layoutItem[4]
-                    let startY = design.resizers['start'][index][1] === 0 ? layoutItem[3] : layoutItem[5]
+        for (let layoutItem of system.layoutData) {
+            // Draw hot resize corners and check for point in path
+            mouse.hasCorner = null
+            mouse.hasCornerPx = [0, 0]
+            for (let index = 0; index < design.resizers['start'].length; ++index) {
+                let startX = design.resizers['start'][index][0] === 0 ? layoutItem[2] : layoutItem[4]
+                let startY = design.resizers['start'][index][1] === 0 ? layoutItem[3] : layoutItem[5]
 
-                    dc.beginPath()
-                    for (let coordinate of design.resizers['coords'][index]) dc.lineTo(startX + coordinate[0], startY + coordinate[1])
-                    dc.closePath()
-
-                    if (dc.isPointInPath(mouse.x, mouse.y)) {
-                        mouse.hasCorner = design.resizers['start'][index]
-                        let cornerX = design.resizers['start'][index][0] === 0 ? mouse.x - layoutItem[2] : mouse.x - layoutItem[4]
-                        let cornerY = design.resizers['start'][index][1] === 0 ? mouse.y - layoutItem[3] : mouse.y - layoutItem[5]
-                        mouse.hasCornerPx = [cornerX, cornerY]
-                        mouse.currentAction = 'resizeCorner'
-                        return
-                    }
-                }
-                
-                // Check layout container pathes            
                 dc.beginPath()
-                dc.rect(layoutItem[2], layoutItem[3], layoutItem[4] - layoutItem[2], layoutItem[5] - layoutItem[3])
+                for (let coordinate of design.resizers['coords'][index]) dc.lineTo(startX + coordinate[0], startY + coordinate[1])
                 dc.closePath()
 
-                if (dc.isPointInPath(mX, mY)) {
-                    if (mouse.selection !== mouse.previousSelection) mouse.previousSelection = mouse.selection
-                    mouse.selection = layoutItem
-                    hasSelection = true
-                    if (layoutItem[9] !== -1) system.activeGroup = layoutItem[9]
-                    else if (mouse.previousSelection !== null && mouse.previousSelection[9] !== -1 && mouse.currentAction === 'grouping') system.activeGroup = mouse.previousSelection[9]
-                    else system.activeGroup = null
-                    break
+                if (dc.isPointInPath(mouse.x, mouse.y)) {
+                    mouse.hasCorner = design.resizers['start'][index]
+                    let cornerX = design.resizers['start'][index][0] === 0 ? mouse.x - layoutItem[2] : mouse.x - layoutItem[4]
+                    let cornerY = design.resizers['start'][index][1] === 0 ? mouse.y - layoutItem[3] : mouse.y - layoutItem[5]
+                    mouse.hasCornerPx = [cornerX, cornerY]
+                    mouse.currentAction = 'resizeCorner'
+                    return
                 }
+            }
+            
+            // Check layout container pathes            
+            dc.beginPath()
+            dc.rect(layoutItem[2], layoutItem[3], layoutItem[4] - layoutItem[2], layoutItem[5] - layoutItem[3])
+            dc.closePath()
+
+            if (dc.isPointInPath(mX, mY)) {
+                if (mouse.selection !== mouse.previousSelection) mouse.previousSelection = mouse.selection
+                mouse.selection = layoutItem
+                hasSelection = true
+                if (layoutItem[9] !== -1) system.activeGroup = layoutItem[9]
+                else if (mouse.previousSelection !== null && mouse.previousSelection[9] !== -1 && mouse.currentAction === 'grouping') system.activeGroup = mouse.previousSelection[9]
+                else system.activeGroup = null
+                break
             }
         }
 
