@@ -8,7 +8,40 @@ function getDesign(designName, width, height) {
             design.background = [['rect'], ['solid'], [['#eee']], [[0, 0, width, height]]]
 
             design.defaultMouse = ['#fff', '#000', 'round', 'line', [0, 0, 1, 0, 12, 10, 12, 15, 5, 15]]
-            design.dragMoveMouse = ['#fff', '#000', 'round', 'line', [0, 0, 1, 0, 12, 10, 12, 15, 5, 15]]
+            design.dragMoveMouse = ['#fff', '#000', 'round', 'line', [
+                -0.5, -8.5,
+                -2.5, -5.5,
+                -4.5, -3.5,
+                -2.5, -3.5,
+                -2.5, 1.5,
+                -7.5, 1.5,
+                -7.5, -0.5,
+                -9.5, 1.5,
+                -11.5, 3.5,
+                -9.5, 5.5,
+                -7.5, 7.5,
+                -7.5, 5.5,
+                -2.5, 5.5,
+                -2.5, 10.5,
+                -4.5, 10.5,
+                -2.5, 12.5,
+                -0.5, 15.5,
+                1.5, 12.5,
+                3.5, 10.5,
+                2.5, 10.5,
+                2.5, 5.5,
+                6.5, 5.5,
+                6.5, 7.5,
+                8.5, 5.5,
+                11.5, 3.5,
+                8.5, 1.5,
+                6.5, -0.5,
+                6.5, 1.5,
+                2.5, 1.5,
+                2.5, -3.5,
+                3.5, -3.5,
+                1.5, -5.5
+            ]]
             design.gridStrokeColor = 'rgba(0,0,0, 0.5)'
             design.hightlighterColor = 'rgba(0,0,0, 0.1)'
 
@@ -45,8 +78,40 @@ function getDesign(designName, width, height) {
         case 'firebird':
         default:
             design.background = [['rect'], ['solid'], [['#6a0000']], [[0, 0, width, height]]]
-            design.defaultMouse = ['#fff', '#000', 'round', 'line', [0, 0, 1, 0, 12, 10, 12, 15, 5, 15]]
-            design.dragMoveMouse = ['#fff', '#000', 'round', 'line', [0, 0, 1, 0, 12, 10, 12, 15, 5, 15]]
+            design.dragMoveMouse = ['#fff', '#000', 'round', 'line', [
+                -0.5, -8.5,
+                -2.5, -5.5,
+                -4.5, -3.5,
+                -2.5, -3.5,
+                -2.5, 1.5,
+                -7.5, 1.5,
+                -7.5, -0.5,
+                -9.5, 1.5,
+                -11.5, 3.5,
+                -9.5, 5.5,
+                -7.5, 7.5,
+                -7.5, 5.5,
+                -2.5, 5.5,
+                -2.5, 10.5,
+                -4.5, 10.5,
+                -2.5, 12.5,
+                -0.5, 15.5,
+                1.5, 12.5,
+                3.5, 10.5,
+                2.5, 10.5,
+                2.5, 5.5,
+                6.5, 5.5,
+                6.5, 7.5,
+                8.5, 5.5,
+                11.5, 3.5,
+                8.5, 1.5,
+                6.5, -0.5,
+                6.5, 1.5,
+                2.5, 1.5,
+                2.5, -3.5,
+                3.5, -3.5,
+                1.5, -5.5
+            ]]
             design.gridStrokeColor = 'rgba(255,255,255, 0.2)'
             design.hightlighterColor = 'rgba(255,200,0, 0.1)'
 
@@ -129,6 +194,14 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
         system.gridEndY = canvas.height
     }
 
+    // Debug stuff
+    /*
+    If enabled we draw the mouse drawing coords in x and y for easier
+    debugging of custom cursors
+    */
+    system.debugMouseDrawing = false
+
+    // Regular stuff
     system.gridX = gridX
     system.gridY = gridY
     system.layoutData = []
@@ -174,7 +247,6 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
     mouse.previousSelection = null
     mouse.currentAction = null
     mouse.snapToGrid = false
-    mouse.current = 'default'
     mouse.showCursor = false
     mouse.cursorAt = [0, 0, 0]
     mouse.cursorText = ''
@@ -320,13 +392,33 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
     // Draw the mouse
     function drawMouse() {
         let activeMouse = design.defaultMouse
-        switch (mouse.current) {
-            case 'dragMove':
+        let mouseOffsetX = 0
+        let mouseOffsetY = 0
+        let scaleXY = 1
+        
+        switch (mouse.currentAction) {
+            case 'inputText':
+                // Cursor when we input text into labels and such
+                activeMouse = design.defaultMouse
+                mouseOffsetX = 0
+                mouseOffsetY = 0
+                scaleXY = 1
+                break
+            case 'dragContainer':
+            case 'dragGroup':
+                // Cursor when dragging a single or a group of containers
                 activeMouse = design.dragMoveMouse
+                mouseOffsetX = 0
+                mouseOffsetY = 0
+                scaleXY = 1
                 break
             case 'default':
             default:
+                // The default mouse cursor
                 activeMouse = design.defaultMouse
+                mouseOffsetX = 0
+                mouseOffsetY = 0
+                scaleXY = 1
                 break
         }
 
@@ -337,13 +429,22 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
         dc.strokeStyle = activeMouse[1]
         dc.lineJoin = activeMouse[2]
 
-        dc.moveTo(mouse.x, mouse.y)
+        dc.moveTo(mouse.x + (mouseOffsetX * scaleXY), mouse.y + (mouseOffsetY * scaleXY))
         dc.beginPath()
 
         if (activeMouse[3] === 'line') {
             dc.lineWidth = 2
-            for (let index = 0; index < drawingSteps; index += 2) {
-                dc.lineTo(mouse.x + drawingCords[index], mouse.y + drawingCords[index + 1])
+            if (system.debugMouseDrawing) {
+                for (let index = 0; index < drawingSteps; index += 2) {
+                    dc.lineTo(mouse.x + Math.round(drawingCords[index] * scaleXY) + mouseOffsetX, mouse.y + Math.round(drawingCords[index + 1] * scaleXY) + mouseOffsetY)
+                    console.log((Math.round(drawingCords[index] * scaleXY) + mouseOffsetX) + ', ' + (Math.round(drawingCords[index + 1] * scaleXY) + mouseOffsetY))
+                }
+
+                console.log('---------------------------------------')
+            } else {
+                for (let index = 0; index < drawingSteps; index += 2) {
+                    dc.lineTo(mouse.x + Math.round(drawingCords[index] * scaleXY) + mouseOffsetX, mouse.y + Math.round(drawingCords[index + 1] * scaleXY) + mouseOffsetY)
+                }
             }
 
             dc.closePath()
@@ -561,9 +662,9 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
             return
         }
 
-        for (let layoutItem of system.layoutData) {
-            // Draw hot resize corners and check for point in path
-            if (system.drawResizers) {
+        if (system.drawContainers) {
+            for (let layoutItem of system.layoutData) {
+                // Draw hot resize corners and check for point in path
                 mouse.hasCorner = null
                 mouse.hasCornerPx = [0, 0]
                 for (let index = 0; index < design.resizers['start'].length; ++index) {
@@ -583,21 +684,21 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
                         return
                     }
                 }
-            }
-            
-            // Check layout container pathes            
-            dc.beginPath()
-            dc.rect(layoutItem[2], layoutItem[3], layoutItem[4] - layoutItem[2], layoutItem[5] - layoutItem[3])
-            dc.closePath()
+                
+                // Check layout container pathes            
+                dc.beginPath()
+                dc.rect(layoutItem[2], layoutItem[3], layoutItem[4] - layoutItem[2], layoutItem[5] - layoutItem[3])
+                dc.closePath()
 
-            if (dc.isPointInPath(mX, mY)) {
-                if (mouse.selection !== mouse.previousSelection) mouse.previousSelection = mouse.selection
-                mouse.selection = layoutItem
-                hasSelection = true
-                if (layoutItem[9] !== -1) system.activeGroup = layoutItem[9]
-                else if (mouse.previousSelection !== null && mouse.previousSelection[9] !== -1 && mouse.currentAction === 'grouping') system.activeGroup = mouse.previousSelection[9]
-                else system.activeGroup = null
-                break
+                if (dc.isPointInPath(mX, mY)) {
+                    if (mouse.selection !== mouse.previousSelection) mouse.previousSelection = mouse.selection
+                    mouse.selection = layoutItem
+                    hasSelection = true
+                    if (layoutItem[9] !== -1) system.activeGroup = layoutItem[9]
+                    else if (mouse.previousSelection !== null && mouse.previousSelection[9] !== -1 && mouse.currentAction === 'grouping') system.activeGroup = mouse.previousSelection[9]
+                    else system.activeGroup = null
+                    break
+                }
             }
         }
 
@@ -609,7 +710,6 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
                 if (mouse.selection[9] === -1) {
                     // Create new group..
                     if (system.activeGroup === null && mouse.selection[9] === -1) {
-                        console.log('group create')
                         system.activeGroup = system.groups.length
                         system.groups.push([mouse.previousSelection[0], mouse.selection[0]])
                         mouse.selection[9] = system.activeGroup
@@ -649,8 +749,12 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
 
             //  Restore the mouse action mode
             if (addedToGroup && system.activeGroup !== null) mouse.currentAction = 'grouping'
-            else if (mouse.previousSelection !== null && mouse.previousSelection[0] === mouse.selection[0]) mouse.currentAction = 'dragContainer'
-            else mouse.currentAction = 'selected'
+            else if (mouse.previousSelection !== null && mouse.previousSelection[0] === mouse.selection[0]) {
+                mouse.currentAction = 'dragContainer'
+            } else {
+                mouse.currentAction = 'selected'
+            }
+
             return
         }
 
@@ -840,7 +944,7 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
             }
         }
 
-        // id, designElementName, x, y, xEnd, yEnd, border, padding, margin, groupIndex, labeltext, img
+        // id, designElementName, x, y, xEnd, yEnd, border, padding, margin, groupIndex, labeltext, img data or img path
         system.layoutData.push([id, 'containerElement', itemStartX, itemStartY, itemEndX, itemEndY, 0, 0, 0, -1, '', null])
         ++system.layoutSize
         return id
@@ -1340,7 +1444,7 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
 
         mouse.x = evt.clientX - mouse.offsetX + system.scrollX - canvas.offsetTop
         mouse.y = evt.clientY - mouse.offsetY + system.scrollY - canvas.offsetLeft
-
+        
         if (mouse.currentAction === 'dragContainer' || (system.activeGroup === null && mouse.currentAction === 'dragGroup')) {
             mouse.selection[2] += mouse.x - mousePreviousX
             mouse.selection[3] += mouse.y - mousePreviousY
@@ -1574,6 +1678,51 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
 
         if (mouse.currentAction === 'inputText') {
             evt.preventDefault()
+            return
+        }
+
+        if (system.shiftPressed && mouse.selection !== null) {
+            switch (evt.keyCode) {
+                case 38:
+                    if (mouse.selection[3] > system.gridX) {
+                        mouse.selection[3] -= system.gridX
+                        mouse.selection[5] -= system.gridX
+                    } else {
+                        mouse.selection[5] = mouse.selection[5] - mouse.selection[3]
+                        mouse.selection[3] = 0
+                    }
+                    break
+                case 40:
+                    if (mouse.selection[5] < system.height) {
+                        mouse.selection[3] += system.gridX
+                        mouse.selection[5] += system.gridX
+                    } else {
+                        mouse.selection[3] = system.height - (mouse.selection[5] - mouse.selection[3])
+                        mouse.selection[5] = system.height
+                    }
+                    break
+                case 37:
+                    if (mouse.selection[2] > system.gridY) {
+                        mouse.selection[2] -= system.gridY
+                        mouse.selection[4] -= system.gridY
+                    } else {
+                        mouse.selection[4] = mouse.selection[4] - mouse.selection[2]
+                        mouse.selection[2] = 0
+                    }
+                    break
+                case 39:
+                    if (mouse.selection[4] < system.width) {
+                        mouse.selection[2] += system.gridY
+                        mouse.selection[4] += system.gridY
+                    } else {
+                        mouse.selection[2] = system.width - (mouse.selection[4] - mouse.selection[2])
+                        mouse.selection[4] = system.width
+                    }
+                    break
+                default:
+                    return
+            }
+
             return
         }
 
