@@ -50,7 +50,7 @@ function getDesign(designName, width, height) {
             design.containerBorderColor = 'rgba(0,0,0, 0.5)'
             design.notificationColor = '#000'
             design.labelColor = '#ccc'
-            design.helpTextColor = '#000'
+            design.helpTextColor = '#ccc'
 
             // Resizers
             design.resizeCorners = ['#222', '#fff', '#ccc']
