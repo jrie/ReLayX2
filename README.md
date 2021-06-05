@@ -44,6 +44,8 @@ This can be changed by pressing `[W]` or `[Q]` for each axis independently
 
 `[+ or -]` Increase or decrase the border on a single item or a group of items
 
+`[Shift + Arrow up, down, left or right]` Moves the current selected container up, down, left or right
+
 `[1 to 9]` - Loads the design from slot 1 to 9, `[Shift + 1 ... 9]` saves a design to slot 1 to 9
 
 `[Shift + Backspace]` Clears all saved data
