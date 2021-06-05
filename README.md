@@ -25,6 +25,8 @@ This project is based on "ReLayX" which was initially written for fun of Javascr
 
 `[Del]` Deletes a single element or a grouped element
 
+`[T]` Toggles container visibility on or off - use with images!
+
 `[C]` create a copy of a single item selection
 
 `[V]` pastes the copy at cursor location, snapping is possible
