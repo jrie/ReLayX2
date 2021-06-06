@@ -208,6 +208,7 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
     system.layoutData = []
     system.layoutSize = 0
     system.activeGroup = null
+    system.lastGroupAddition = null
     system.groups = []
     system.lastId = 0
     system.drawGrid = true
@@ -705,8 +706,8 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
         if (hasSelection) {
             let addedToGroup = false
             if (mouse.currentAction === 'grouping') {
-                if (mouse.previousSelection === mouse.selection && system.activeGroup === null) return
-
+                if (mouse.previousSelection === mouse.selection && system.activeGroup === null && system.lastGroupAddition === mouse.selection[0]) return
+                
                 if (mouse.selection[9] === -1) {
                     // Create new group..
                     if (system.activeGroup === null && mouse.selection[9] === -1) {
@@ -719,8 +720,9 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
                         system.groups[system.activeGroup].push(mouse.selection[0])
                         mouse.selection[9] = system.activeGroup
                     }
-
+                   
                     addedToGroup = true
+                    system.lastGroupAddition = mouse.selection[0]
                 } else if (system.activeGroup !== null && mouse.selection[9] !== -1 && mouse.previousSelection[9] === system.activeGroup) {
                     // Remove entry of group
                     let group = system.groups[system.activeGroup]
@@ -740,6 +742,7 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
                             }
 
                             system.activeGroup = null
+                            system.lastGroupAddition = null
                         }
 
                         mouse.selection[9] = -1
@@ -748,8 +751,9 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
             }
 
             //  Restore the mouse action mode
-            if (addedToGroup && system.activeGroup !== null) mouse.currentAction = 'grouping'
-            else if (mouse.previousSelection !== null && mouse.previousSelection[0] === mouse.selection[0]) {
+            if (system.lastGroupAddition !== mouse.previousSelection[0]) {
+                mouse.currentAction = 'grouping'
+            } else if (mouse.previousSelection !== null && mouse.previousSelection[0] === mouse.selection[0]) {
                 mouse.currentAction = 'dragContainer'
             } else {
                 mouse.currentAction = 'selected'
@@ -802,7 +806,7 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
             let offsetX = 0
 
             if (system.mirrorHorizontal) {
-                if (containerX > mouse.threshold) {
+                if (containerX >= mouse.threshold) {
                     let containerId = createLayoutContainer(mStartX, mStartY, mEndX, mEndY, true)
                     system.groups.push([containerId])
                     system.activeGroup = system.groups.length - 1
@@ -834,7 +838,7 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
                 let offsetGridY = 0
                 let offsetY = 0
 
-                if (containerY > mouse.threshold) {
+                if (containerY >= mouse.threshold) {
                     if (system.spaceGridY > 0) offsetGridY = system.spaceGridY
                     else offsetGridY = mStartY - system.gridStartY
 
@@ -1168,7 +1172,7 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
                 offsetX = 0
                 dc.rect(mStartX, mStartY, mEndX - mStartX, mEndY - mStartY)
 
-                if (containerX > mouse.threshold) {
+                if (containerX >= mouse.threshold) {
                     while (offsetX + containerX + offsetGridX <= system.gridEndX - mEndX) {
                         offsetX += offsetGridX + containerX
                         dc.rect(mStartX + offsetX, mStartY, containerX, containerY)
@@ -1195,7 +1199,7 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
                 offsetY = 0
                 dc.rect(mStartX, mStartY, mEndX - mStartX, mEndY - mStartY)
 
-                if (containerY > mouse.threshold) {
+                if (containerY >= mouse.threshold) {
                     while (offsetY + containerY + offsetGridY <= system.gridEndY - mEndY) {
                         offsetY += offsetGridY + containerY
                         dc.rect(mStartX, mStartY + offsetY, containerX, containerY)
@@ -1995,6 +1999,7 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
         if (evt.keyCode === 17) {
             // Ctrl key
             system.ctrlPressed = false
+            if (mouse.currentAction === 'grouping') mouse.currentAction = 'selected'
             return
         }
 
