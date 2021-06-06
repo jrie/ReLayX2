@@ -2150,7 +2150,7 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
         mouse.highlightSelection = false
     }
 
-    function importImage(evt) {
+    function importDroppedImage(evt) {
         for (let fileItem of evt.dataTransfer.files) {
             if (fileItem.type === 'image/jpeg' || fileItem.type === 'image/jpg' || fileItem.type === 'image/png' || fileItem.type === 'image/gif') {
                 if (fileItem.path !== undefined) {
@@ -2185,7 +2185,7 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
     canvas.addEventListener('mousemove', handleMouseMove)
     canvas.addEventListener('mousedown', checkMouseDown)
     canvas.addEventListener('mouseup', checkMouseUp)
-    canvas.addEventListener('drop', importImage)
+    canvas.addEventListener('drop', importDroppedImage)
     canvas.addEventListener('dragleave', removeImageDropdownHighlight)
     canvas.addEventListener('dragover', allowImageDrop)
     document.addEventListener('keydown', handleKeyboardDown)
