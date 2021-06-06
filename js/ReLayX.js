@@ -1550,7 +1550,7 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
             case 35:
                 // End key
                 evt.preventDefault()
-                mouse.cursorAt[0] = mouse.selection[2] + ((mouse.selection[4] - mouse.selection[2]) * 0.5) + dc.measureText(mouse.selection[10]).width * 0.5
+                mouse.cursorAt[0] = mouse.selection[2] + ((mouse.selection[4] - mouse.selection[2]) * 0.5) + (dc.measureText(mouse.selection[10]).width * 0.5)
                 mouse.cursorAt[2] = text.length
 
                 /*
@@ -1563,7 +1563,7 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
             case 36:
                 // Position 1 key
                 evt.preventDefault()
-                mouse.cursorAt[0] = mouse.selection[2] + ((mouse.selection[4] - mouse.selection[2]) * 0.5) - dc.measureText(mouse.selection[10]).width * 0.5
+                mouse.cursorAt[0] = mouse.selection[2] + ((mouse.selection[4] - mouse.selection[2]) * 0.5) - (dc.measureText(mouse.selection[10]).width * 0.5)
                 mouse.cursorAt[2] = 0
                 /*
                 if (mouse.cursorItem.controlPressed) {
@@ -1592,11 +1592,11 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
                 return
                 break
             case 46:
-                // Del key
+                // Delete key
                 if (mouse.cursorAt[2] < text.length) {
+                    mouse.cursorAt[0] += Math.round(dc.measureText(text.charAt(mouse.cursorAt[2])).width * 0.5)
                     text = text.substring(0, mouse.cursorAt[2]) + text.substring(mouse.cursorAt[2] + 1, text.length)
                     mouse.selection[10] = text
-                    mouse.cursorAt[0] += 3
                 }
                 return
                 break
@@ -1604,10 +1604,10 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
                 // Backspace key
                 evt.preventDefault()
                 if (mouse.cursorAt[2] > 0) {
+                    mouse.cursorAt[0] -= Math.round(dc.measureText(mouse.selection[10].charAt(mouse.cursorAt[2] - 1)).width * 0.5)
+                    text = text.substring(0, mouse.cursorAt[2] - 1) + text.substring(mouse.cursorAt[2], text.length)
                     --mouse.cursorAt[2]
-                    text = text.substring(0, mouse.cursorAt[2]) + text.substring(mouse.cursorAt[2] + 1, text.length)
                     mouse.selection[10] = text
-                    mouse.cursorAt[0] -= 3
                 }
                 return
                 break
@@ -1639,8 +1639,8 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
                 // Arrow key right
                 evt.preventDefault()
                 if (mouse.cursorAt[2] < text.length) {
-                    mouse.cursorAt[0] += dc.measureText(text.charAt(mouse.cursorAt[2])).width
                     ++mouse.cursorAt[2]
+                    mouse.cursorAt[0] += dc.measureText(text.charAt(mouse.cursorAt[2])).width
                 }
                 /*
                 if (mouse.cursorItem.controlPressed) {
@@ -1660,16 +1660,13 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
         if (evt.key.length === 1) {
             let letterWidth = dc.measureText(evt.key).width
             let maxWidth = mouse.selection[4] - mouse.selection[2] - 10
-            if (dc.measureText(text).width + letterWidth > maxWidth) {
-                return
-            }
+            if (dc.measureText(text).width + letterWidth > maxWidth) return
 
-            if (mouse.cursorAt[2] < text.length) {
-                mouse.selection[10] = mouse.selection[10].substring(0, mouse.cursorAt[2]) + evt.key + mouse.selection[10].substring(mouse.cursorAt[2], text.length)
-            } else mouse.selection[10] += evt.key
+            if (mouse.cursorAt[2] < text.length) mouse.selection[10] = mouse.selection[10].substring(0, mouse.cursorAt[2]) + evt.key + mouse.selection[10].substring(mouse.cursorAt[2], text.length)
+            else mouse.selection[10] += evt.key
 
             ++mouse.cursorAt[2]
-            mouse.cursorAt[0] += letterWidth - 3
+            mouse.cursorAt[0] += Math.round(letterWidth * 0.5)
         }
     }
 
@@ -2121,24 +2118,17 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
             lg('Mirror spacing resetted on both axis to 0.')
         } else if (evt.keyCode === 87) {
             // W key increases the current selection axis grid spacing by one grid unit
-            if (system.mirrorHorizontal) {
-                system.spaceGridX += system.gridX
-            } else {
-                system.spaceGridY += system.gridY
-            }
+            if (system.mirrorHorizontal) system.spaceGridX += system.gridX
+            else system.spaceGridY += system.gridY
             lg('Increased grid spacing to: ' + system.spaceGridX + ' X and ' + system.spaceGridY + ' Y')
         } else if (evt.keyCode === 81) {
             // Q key decreases the current selection axis grid spacing by one grid unit
             if (system.mirrorHorizontal) {
                 system.spaceGridX -= system.gridX
-                if (system.spaceGridX < 0) {
-                    system.spaceGridX = 0
-                }
+                if (system.spaceGridX < 0) system.spaceGridX = 0
             } else {
                 system.spaceGridY -= system.gridY
-                if (system.spaceGridY < 0) {
-                    system.spaceGridY = 0
-                }
+                if (system.spaceGridY < 0) system.spaceGridY = 0
             }
             lg('Decreased grid spacing to: ' + system.spaceGridX + ' X and ' + system.spaceGridY + ' Y')
         }
