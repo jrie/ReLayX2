@@ -751,14 +751,8 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
             }
 
             //  Restore the mouse action mode
-            if (system.lastGroupAddition !== mouse.previousSelection[0]) {
-                mouse.currentAction = 'grouping'
-            } else if (mouse.previousSelection !== null && mouse.previousSelection[0] === mouse.selection[0]) {
-                mouse.currentAction = 'dragContainer'
-            } else {
-                mouse.currentAction = 'selected'
-            }
-
+            if (mouse.previousSelection !== null && mouse.previousSelection[0] === mouse.selection[0]) mouse.currentAction = 'dragContainer'
+            else mouse.currentAction = 'selected'
             return
         }
 
