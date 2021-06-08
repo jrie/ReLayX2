@@ -1250,7 +1250,9 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
             '[E] zeros/erases the grid spacing values for both mirroring axis',
             '[+ or -] Increase or decrase the border on a single item or a group of items',
             '[Shift + Arrow up, down, left or right] Moves the current selected container up, down, left or right',
-            '[1 to 9] - Loads the design from slot 1 to 9, [SHIFT + 1 ... 9] saves a design to slot 1 to 9',
+            '[1 to 9] Loads the design from slot 1 to 9, [SHIFT + 1 ... 9] saves a design to slot 1 to 9',
+            'in the desktop version this will also save the designs to "saves/slot_NUMBER.txt". The browser version',
+            'only uses the browsers local storage but is limited to 5 to 10 MB.',
             '[Shift + BACKSPACE] Clears all saved data',
             '[L] Create or rename a labeled item if selected, if nothing is selected, turns label rendering on or off'
         ]
