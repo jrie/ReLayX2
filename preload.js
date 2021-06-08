@@ -25,7 +25,7 @@ window.addEventListener('DOMContentLoaded', () => {
     document.querySelector('body').addEventListener('keyup', function(evt) {
         if (evt.shiftKey && evt.keyCode >= 49 && evt.keyCode <= 57) {
             let slotNum = evt.keyCode - 48
-            saveFilePath = path.join(saveFileFolder, 'slot_'+ slotNum +'.json')
+            saveFilePath = path.join(saveFileFolder, 'slot_'+ slotNum +'.txt')
         }
     })
 })
