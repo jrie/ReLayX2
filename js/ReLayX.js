@@ -173,7 +173,7 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
 
     let design = getDesign(designName, width, height, gridX, gridY)
     system.designNames = ['snowwhite', 'firebird']
-    system.currentDesign = 0
+    system.currentDesign = system.designNames.indexOf(designName)
 
     // Our dataholder
     system.width = width
@@ -748,6 +748,8 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
                         mouse.selection[9] = -1
                     }
                 }
+
+                return
             }
 
             //  Restore the mouse action mode
@@ -1896,17 +1898,23 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
         system.storage.setItem(layoutKey, true)
 
         let item = 0
+        savePanel.textContent = ''
+        
         for (item = 0; item < system.layoutSize; item++) {
             if (system.layoutData[item][11] !== null) {
                 let temp = system.layoutData[item][11]
                 system.layoutData[item][11] = system.layoutData[item][11].src.toString().replace(/\,/g, '|||')
                 system.storage.setItem(layoutSubKey + item, system.layoutData[item].join('|#|'))
+                savePanel.textContent += system.layoutData[item].join('|#|') + '\n'
                 system.layoutData[item][11] = temp
             } else {
                 system.storage.setItem(layoutSubKey + item, system.layoutData[item].join('|#|'))
+                savePanel.textContent += system.layoutData[item].join('|#|') + '\n'
             }
         }
+
         system.storage.setItem(layoutSubKey + item, false)
+        document.querySelector('#savePanel').dispatchEvent(new Event('change'))
         lg('Design saved in slot ' + slot + '.')
         return
     }
