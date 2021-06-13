@@ -1895,6 +1895,7 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
             lg('Cannot use loading or saving function in this browser.')
             return
         }
+
         let layoutKey = 'layout_' + slot
         let layoutSubKey = layoutKey + '_'
         system.storage.setItem(layoutKey, true)
@@ -1915,19 +1916,76 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
             }
         }
 
-        system.storage.setItem(layoutSubKey + item, false)
-        document.querySelector('#savePanel').dispatchEvent(new Event('change'))
+        if (navigator.userAgent.toLowerCase().indexOf('electron/') !== -1) {
+            document.querySelector('#savePanel').dispatchEvent(new Event('change'))
+        } else {
+            system.storage.setItem(layoutSubKey + item, false)
+        }
+
         lg('Design saved in slot ' + slot + '.')
         return
     }
 
-    function loadDesign(slot) {
-        if (system.storage === null) {
-            lg('Cannot use loading or saving function in this browser.')
-            return
+    function loadElectronSlot(evt) {
+        system.layoutData = []
+        system.layoutSize = 0
+        system.groups = []
+        system.activeGroup = null
+        mouse.selection = null
+
+        let groupIndexes = []
+
+        let storageData = evt.target.textContent.split('\n')
+        for (let line of storageData) {
+            if (line.length === 0) continue
+            let storageItemData = line.split('|#|')
+
+            for (let key = 0; key < storageItemData.length; key++) {
+
+                // Handle image data specially
+                if (key === 11) {
+                    if (storageItemData[11] === '') storageItemData[11] = null
+                    else {
+                        let image = new Image()
+                        if (storageItemData[11].startsWith('data:')) image.src = storageItemData[11].replace(/\|\|\|/gm, ',')
+                        else image.src = storageItemData[11]
+
+                        storageItemData[11] = image
+                    }
+                    continue
+                }
+
+                // Regular values
+                let floatVal = parseFloat(storageItemData[key])
+                if (!Number.isNaN(floatVal)) {
+                    storageItemData[key] = floatVal
+                }
+            }
+
+            let groupKey = storageItemData[9]
+            if (groupKey !== -1) {
+                if (groupIndexes.indexOf(groupKey) === -1) {
+                    groupIndexes.push(groupKey)
+                    system.groups.push([storageItemData[0]])
+                } else {
+                    system.groups[groupIndexes.indexOf(groupKey)].push(storageItemData[0])
+                }
+
+                storageItemData[9] = groupIndexes.indexOf(groupKey)
+            }
+
+            system.layoutData.push(storageItemData)
+            ++system.layoutSize
         }
 
+        system.activeGroup = null
+        mouse.selection = null
 
+        lg('Design loaded from slot ' + document.querySelector('#loadSlot').value.toString() + '.')
+        return
+    }
+
+    function loadBrowserSlot(slot) {
         let layoutKey = 'layout_' + slot
         let layoutSubKey = layoutKey + '_'
         let layoutIndex = 0
@@ -1953,7 +2011,7 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
                             let image = new Image()
                             if (storageItemData[11].startsWith('data:')) image.src = storageItemData[11].replace(/\|\|\|/gm, ',')
                             else image.src = storageItemData[11]
-    
+
                             storageItemData[11] = image
                         }
                         continue
@@ -1989,9 +2047,20 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
             lg('Design loaded from slot ' + slot + '.')
             return
         }
+    }
 
-        lg('No design to load in slot ' + slot + '.')
-        return
+    function loadDesign(slot) {
+        if (system.storage === null) {
+            lg('Cannot use loading or saving function in this browser.')
+            return
+        }
+
+        if (navigator.userAgent.toLowerCase().indexOf('electron/') === -1) loadBrowserSlot(slot)
+        else {
+            let slotLoader = document.querySelector('#loadSlot')
+            slotLoader.value = slot
+            slotLoader.dispatchEvent(new Event('change'))
+        }
     }
 
     function handleKeyboardUp(evt) {
@@ -2189,5 +2258,7 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
     canvas.addEventListener('dragover', allowImageDrop)
     document.addEventListener('keydown', handleKeyboardDown)
     document.addEventListener('keyup', handleKeyboardUp)
+
+    document.querySelector('#savePanel').addEventListener('input', loadElectronSlot)
     mainloop()
 }
