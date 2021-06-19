@@ -5,7 +5,15 @@ This project is based on "ReLayX" which was initially written for fun of Javascr
 
 **ReLayX2** is ported to work on the desktop using *Electron* but also in *common browsers* and is an improved version of the existing old version.
 
-#### Shortcuts
+### Installation and usage
+#### Browser Version
+Clone or download the repository and open **index.html**.
+
+#### Using Electron
+If you just downloaded or clonend the repository you have to have `npm` *(NodePackageManager)* installed. After that run `npm install` in the ReLayX2 folder and after that run using `npm start`. This is mainly for the dev part, but recommended since there are no official releases of RelayX2 at the moment.
+
+
+### Usage help and shortcuts
 
 `[I]` Toggles this help on/off
 
