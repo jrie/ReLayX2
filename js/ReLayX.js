@@ -976,7 +976,7 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
                 // Draw the labels
                 if (system.drawLabels && !system.showHelp) {
                     dc.textAlign = 'center'
-                    dc.font = 'Normal 0.75em sans'
+                    dc.font = 'Normal 0.75em Open Sans'
 
                     let centerX = layoutItem[2] + ((layoutItem[4] - layoutItem[2]) * 0.5)
                     let centerY = layoutItem[3] + ((layoutItem[5] - layoutItem[3]) * 0.5)
@@ -1071,7 +1071,7 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
 
                     dc.fillStyle = design.labelColor
                     dc.textAlign = 'center'
-                    dc.font = 'Normal 0.75em sans'
+                    dc.font = 'Normal 0.75em Open Sans'
 
                     let textWidth = (dc.measureText(layoutItem[10]).width * 0.5);
                     if (textWidth !== 0) textWidth += 6
@@ -1259,17 +1259,17 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
 
         dc.fillStyle = design.helpTextColor
 
-        dc.font = 'Bold 1.25em sans'
+        dc.font = 'Bold 1.25em Open Sans'
         dc.fillText('__ ReLayX Shortcuts _______________________________________________________________________', canvas.width * 0.25, 60)
 
-        dc.font = 'Normal 1em sans'
+        dc.font = 'Normal 1em Open Sans'
         let offsetY = 90
         for (let item in shortcuts) {
             dc.fillText(shortcuts[item], canvas.width * 0.25, (item * 22) + offsetY)
         }
 
         offsetY += shortcuts.length * 22 + 70
-        dc.font = 'Bold 1.25em sans'
+        dc.font = 'Bold 1.25em Open Sans'
         dc.fillText('__ First steps ________________________________________________________________________________', canvas.width * 0.25, offsetY - 32)
 
         let first = [
@@ -1283,13 +1283,13 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
             'snapping can be used here too when holding [SHIFT] while pressing [V] once.'
         ]
 
-        dc.font = 'Normal 1em sans'
+        dc.font = 'Normal 1em Open Sans'
         for (let item in first) {
             dc.fillText(first[item], canvas.width * 0.25, (item * 21) + offsetY)
         }
 
         offsetY += first.length * 22 + 70
-        dc.font = 'Bold 1.25em sans'
+        dc.font = 'Bold 1.25em Open Sans'
         dc.fillText('__ Grouping __________________________________________________________________________________', canvas.width * 0.25, offsetY - 32)
 
         let group = [
@@ -1303,13 +1303,13 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
             'holding [CONTROL], on it again, its then ungrouped. This is also shown by its colors.'
         ]
 
-        dc.font = 'Normal 1em sans'
+        dc.font = 'Normal 1em Open Sans'
         for (let item in group) {
             dc.fillText(group[item], canvas.width * 0.25, (item * 21) + offsetY)
         }
 
         offsetY += group.length * 22 + 70
-        dc.font = 'Bold 1.25em sans'
+        dc.font = 'Bold 1.25em Open Sans'
         dc.fillText('__ Mirroring __________________________________________________________________________________', canvas.width * 0.25, offsetY - 32)
 
         let mirror = [
@@ -1335,14 +1335,14 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
             'pressing [Q] or [W].'
         ]
 
-        dc.font = 'Normal 1em sans'
+        dc.font = 'Normal 1em Open Sans'
         for (let item in mirror) {
             dc.fillText(mirror[item], canvas.width * 0.25, (item * 21) + offsetY)
         }
 
         offsetY += mirror.length * 22 + 70
 
-        dc.font = 'Bold 1.25em sans'
+        dc.font = 'Bold 1.25em Open Sans'
         dc.fillText('__ Images _____________________________________________________________________________________', canvas.width * 0.25, offsetY - 32)
 
         let images = [
@@ -1350,14 +1350,14 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
             'container and drag and drop the desired image (JPG, PNG, GIF) from the desktop to the application.'
         ]
 
-        dc.font = 'Normal 1em sans'
+        dc.font = 'Normal 1em Open Sans'
         for (let item in images) {
             dc.fillText(images[item], canvas.width * 0.25, (item * 21) + offsetY)
         }
 
         offsetY += images.length * 22 + 70
 
-        dc.font = 'Bold 1.25em sans'
+        dc.font = 'Bold 1.25em Open Sans'
         dc.fillText('Find more @ https://github.com/jrie/ReLayX2', canvas.width * 0.25, offsetY - 32)
     }
 
@@ -1371,11 +1371,11 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
         dc.textAlign = 'left'
 
         if (!system.showHelp && system.showHelpNote) {
-            dc.font = 'Bold 1.25em sans'
+            dc.font = 'Bold 1.25em Open Sans'
             dc.fillText('Press [I] to open help, [U] to hide/show this message', window.scrollX + 20, window.scrollY + 40)
         }
 
-        dc.font = 'Normal 1.25em sans'
+        dc.font = 'Normal 1.25em Open Sans'
         while (notes--) {
             if (system.notifications[notes][0] < 65) {
                 ++system.notifications[notes][0]
@@ -1541,7 +1541,7 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
         //system.layoutData.push([id, 'containerElement', itemStartX, itemStartY, itemEndX, itemEndY, 0, 0, 0, -1, ''])
         let text = mouse.selection[10]
 
-        dc.font = 'Normal 0.75em sans'
+        dc.font = 'Normal 0.75em Open Sans'
         if (mouse.cursorAt[2] === text.length) {
             mouse.cursorAt[0] = mouse.selection[2] + ((mouse.selection[4] - mouse.selection[2]) * 0.5) + (dc.measureText(text).width * 0.5)
             mouse.cursorAt[1] = mouse.selection[3] + ((mouse.selection[5] - mouse.selection[3]) * 0.5) - 38
@@ -1790,7 +1790,7 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
         if (evt.keyCode === 76) {
             if (mouse.selection !== null && system.drawLabels) {
                 mouse.currentAction = 'inputText'
-                dc.font = 'Normal 0.75em sans'
+                dc.font = 'Normal 0.75em Open Sans'
                 mouse.cursorAt[0] = mouse.selection[2] + ((mouse.selection[4] - mouse.selection[2]) * 0.5) + (dc.measureText(mouse.selection[10]).width * 0.5)
                 mouse.cursorAt[1] = mouse.selection[3] + ((mouse.selection[5] - mouse.selection[3]) * 0.5) - 38
                 mouse.cursorAt[2] = mouse.selection[10].length

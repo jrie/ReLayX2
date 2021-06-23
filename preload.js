@@ -1,7 +1,7 @@
 const path = require('path')
 const fs = require('fs')
 
-let saveFileFolder = path.join(__dirname, 'saves')
+let saveFileFolder = 'saves'
 let saveFilePath = ''
 let loadFilePath = ''
 
