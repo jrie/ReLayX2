@@ -55,14 +55,6 @@
         {
           "arch": "ia32",
           "target": "deb"
-        },
-        {
-          "arch": "arm64",
-          "target": "AppImage"
-        },
-        {
-          "arch": "arm64",
-          "target": "deb"
         }
       ]
     },
