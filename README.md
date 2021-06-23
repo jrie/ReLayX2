@@ -9,9 +9,16 @@ This project is based on "ReLayX" which was initially written for fun of Javascr
 #### Browser Version
 Clone or download the repository and open **index.html**.
 
-#### Using Electron
-If you just downloaded or clonend the repository you have to have `npm` *(NodePackageManager)* installed. After that run `npm install` in the ReLayX2 folder and after that run using `npm start`. This is mainly for the dev part, but recommended since there are no official releases of RelayX2 at the moment.
+#### Windows and Linux
+Open the releases here: https://github.com/jrie/ReLayX2/releases/latest  
+Use and download either the `ia32` for 32 bit, `x64` exe files for 64 bit on Windows or `arm64` for ARM cpu's and `i386.deb` for 32bit Linux Debian Package.
+On Linux you also can make use of the `.AppImage` without any installation.
 
+#### Using a development environment with Electron
+If you just downloaded or clonend the repository you have to have `npm` *(NodePackageManager)* installed. After that run `npm install` in the ReLayX2 folder and after that run using `npm start`. This is mainly for the dev part.
+
+#### Build yourself
+To build the package yourself run `npm install` from the root folder. Then run `npm run dist` to build all packages - Windows and Linux only at this moment!
 
 ### Usage help and shortcuts
 
@@ -56,7 +63,7 @@ This can be changed by pressing `[W]` or `[Q]` for each axis independently
 
 `[1 to 9]` - Loads the design from slot 1 to 9, `[Shift + 1 ... 9]` saves a design to slot 1 to 9
 
-`[Shift + Backspace]` Clears all saved data
+`[Shift + Backspace]` Clears all saved data (this is browser only!)
 
 `[L]` Create or rename a labeled item if selected. If nothing is selected, turns label rendering on or off.
 
