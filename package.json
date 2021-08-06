@@ -1,6 +1,6 @@
 {
   "name": "relayx2",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "A (web)designer layout tool with a twist",
   "author": {
     "name": "Jan Riechers",
@@ -12,7 +12,11 @@
     "dist": "electron-builder -wl",
     "clean": "rm -rf dist"
   },
-  "keywords": ["layouting", "layout", "grid"],
+  "keywords": [
+    "layouting",
+    "layout",
+    "grid"
+  ],
   "license": "GPL-3.0-or-later",
   "repository": {
     "type": "git",
@@ -24,7 +28,7 @@
   "homepage": "https://github.com/jrie/ReLayX2#readme",
   "devDependencies": {
     "electron": "^13.1.2",
-    "electron-builder": "^22.11.7"
+    "electron-builder": "^22.9.1"
   },
   "build": {
     "appId": "net.dwrox.relayx",
