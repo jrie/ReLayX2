@@ -11,7 +11,7 @@ Clone or download the repository and open **index.html**.
 
 #### Windows and Linux
 Open the releases here: https://github.com/jrie/ReLayX2/releases/latest  
-Use and download either the `ia32` for 32 bit, `x64` exe files for 64 bit on Windows or `arm64` for ARM cpu's and `i386.deb` for 32bit Linux Debian Package.
+Use and download either the `ia32` for 32 bit, `x64` exe files for 64 bit on Windows or for example the`i386.deb` for 32bit Linux Debian Package.
 On Linux you also can make use of the `.AppImage` without any installation.
 
 #### Using a development environment with Electron
