@@ -2051,6 +2051,9 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
 
             lg('Design loaded from slot ' + slot + '.')
             return
+        } else {
+            lg('No design found at slot ' + slot + '.')
+            return
         }
     }
 
