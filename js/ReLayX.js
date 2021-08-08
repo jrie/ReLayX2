@@ -2214,13 +2214,19 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
 
     function addImageToLayout(evt) {
         if (mouse.selection !== null) mouse.selection[11] = evt.target
+        else {
+            createLayoutContainer(mouse.x, mouse.y, mouse.x + evt.target.width, mouse.y + evt.target.height, false)
+            mouse.selection = system.layoutData[system.layoutData.length - 1]
+            mouse.selection[11] = evt.target
+        }
+        
         evt.target.removeEventListener('load', addImageToLayout)
         mouse.highlightSelection = false
     }
 
     function importDroppedImage(evt) {
         for (let fileItem of evt.dataTransfer.files) {
-            if (fileItem.type === 'image/jpeg' || fileItem.type === 'image/jpg' || fileItem.type === 'image/png' || fileItem.type === 'image/gif') {
+            if (fileItem.type === 'image/jpeg' || fileItem.type === 'image/webp' || fileItem.type === 'image/jpg' || fileItem.type === 'image/png' || fileItem.type === 'image/gif') {
                 if (fileItem.path !== undefined) {
                     let imageMap = new Image()
                     imageMap.addEventListener('load', addImageToLayout)
