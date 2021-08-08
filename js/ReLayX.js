@@ -2108,7 +2108,7 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
                 // 1 to 9 pressed on keyboard pressed
                 let slot = evt.keyCode - 48
                 saveDesign(slot)
-                lg('Saving design to slot ' + slot.toString())
+                lg('Saving design to slot ' + slot.toString() + '..')
             }
 
             if (evt.keyCode === 68) {
@@ -2125,7 +2125,7 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
             if (evt.keyCode >= 49 && evt.keyCode <= 57) {
                 // 1 to 9 pressed on keyboard pressed
                 let slot = evt.keyCode - 48
-                lg('Loading design from slot ' + slot.toString())
+                lg('Loading design from slot ' + slot.toString() + '..')
                 loadDesign(slot)
             }
         }
