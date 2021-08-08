@@ -1927,6 +1927,11 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
     }
 
     function loadElectronSlot(evt) {
+        if (evt.target.textContent === '') {
+            lg('No design found at slot ' + document.querySelector('#loadSlot').value.toString() + '.')
+            return
+        }
+
         system.layoutData = []
         system.layoutSize = 0
         system.groups = []

@@ -36,6 +36,9 @@ function loadData(evt)  {
             } else {
                 console.log('Error when loading from file: ' + loadFilePath)
                 console.log(err)
+                let savePanel = document.querySelector('#savePanel')
+                savePanel.textContent = ''
+                savePanel.dispatchEvent(new Event('input'))
             }
         })
     } catch (err) {
@@ -49,12 +52,27 @@ window.addEventListener('DOMContentLoaded', () => {
     document.querySelector('#loadSlot').addEventListener('change', loadData)
 
     document.querySelector('body').addEventListener('keyup', function(evt) {
-        if (evt.shiftKey && evt.keyCode >= 49 && evt.keyCode <= 57) {
-            let slotNum = evt.keyCode - 48
-            saveFilePath = path.join(saveFileFolder, 'slot_'+ slotNum +'.txt')
-        } else if (evt.keyCode >= 49 && evt.keyCode <= 57) {
-            let slotNum = evt.keyCode - 48
-            loadFilePath = path.join(saveFileFolder, 'slot_' + slotNum + '.txt')
+        let slotNum = ""
+        switch (evt.code) {
+            case 'Digit1':
+            case 'Digit2':
+            case 'Digit3':
+            case 'Digit4':
+            case 'Digit5':
+            case 'Digit6':
+            case 'Digit7':
+            case 'Digit8':
+            case 'Digit9':
+                slotNum = evt.code.replace('Digit', '')
+                break
+            default:
+                return
+                break
+        }
+
+        if (slotNum !== "") {
+            if (evt.shiftKey) saveFilePath = path.join(saveFileFolder, 'slot_'+ slotNum +'.txt')
+            else loadFilePath = path.join(saveFileFolder, 'slot_' + slotNum + '.txt')
         }
     })
 })
