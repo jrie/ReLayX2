@@ -30,7 +30,7 @@ To build the package yourself run `npm install` from the root folder. Then run `
 
 `[Control]` cancels ongoing action or when grouping/ungrouping items
 
-`[Shift]` snaps to grid when drawing selection, moving an item (click and drag) and mirroring and also on resizing
+`[Shift]` snaps to grid when drawing selection, moving an item (click and drag) and mirroring and also when resizing
 
 `[Shift + I]` Toggles image display on and off
 
@@ -69,4 +69,6 @@ This can be changed by pressing `[W]` or `[Q]` for each axis independently
 
 ### Image import
 
-Images can be imported by using drag an drop. In order to import a image, select a container where the image should become placed and drag and drop the desired image into the window.
+Supported image types are: *gif*, *jpg*, *png* and *webp*.  
+
+Images can be imported by using drag an drop. In order to import a image: Either select a container where the image should become placed and drag and drop the desired image into the window **or** if no container is selected the image, respected it original widht and height, is placed at the mouse cursor position.
