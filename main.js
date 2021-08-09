@@ -10,7 +10,7 @@ function createWindow () {
     }    
   })
 
-  //win.menuBarVisible = false
+  win.setMenu(null)
   win.loadFile(path.join(__dirname, 'index.html'))
   //win.webContents.openDevTools()
 }
