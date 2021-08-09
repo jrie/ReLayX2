@@ -52,6 +52,16 @@ body  {
     width: 100%;
 }
 
+#relaxBackground {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  width: inherit;
+  height: inherit;
+  z-index: 1;
+  pointer-events: none;
+}
+
 #savePanel,
 #loadSlot {
     display: none;
