@@ -159,6 +159,9 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
     // General variables
     let canvas = document.getElementById(canvasItem)
     let dc = canvas.getContext('2d')
+    
+    let bgCanvas = document.querySelector('#relaxBackground')
+    let bgContext = bgCanvas.getContext('2d')
 
     // Debug console shortcut
     function lg(msg) {
@@ -170,6 +173,11 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
     canvas.width = width
     canvas.height = height
     canvas.style.cursor = 'none'
+
+    bgCanvas.width = width
+    bgCanvas.height = height
+    bgCanvas.style.cursor = 'none'
+    //-----------------------------------------------------------------------
 
     let design = getDesign(designName, width, height, gridX, gridY)
     system.designNames = ['snowwhite', 'firebird']
@@ -471,25 +479,29 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
         let stepX = 0
         let stepY = 0
 
-        dc.lineWidth = 0.5
-        dc.strokeStyle = design.gridStrokeColor
+        bgContext.lineWidth = 0.5
+        bgContext.strokeStyle = design.gridStrokeColor
 
-        dc.beginPath()
+        bgContext.clearRect(0, 0, system.gridEndX, system.gridEndY)
+        bgContext.beginPath()
 
         while (stepY + startY <= endY) {
-            dc.moveTo(startX, stepY + startY)
-            dc.lineTo(endX, stepY + startY)
+            bgContext.moveTo(startX, stepY + startY)
+            bgContext.lineTo(endX, stepY + startY)
             stepY += gridY
         }
 
         while (stepX + startX <= endX) {
-            dc.moveTo(stepX + startX, startY)
-            dc.lineTo(stepX + startX, endY)
+            bgContext.moveTo(stepX + startX, startY)
+            bgContext.lineTo(stepX + startX, endY)
             stepX += gridX
         }
 
-        dc.closePath()
-        dc.stroke()
+        bgContext.closePath()
+        bgContext.stroke()
+        for (let container of system.layoutData) {
+            bgContext.clearRect(container[2], container[3], container[4] - container[2], container[5] - container[3])
+        }
     }
 
     function checkMouseDown(evt) {
@@ -506,6 +518,8 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
         let offsetX = 0
         let offsetGridY = 0
         let offsetY = 0
+
+        if (evt.button !== 0) return
 
         if (mouse.currentAction === 'mirrorSelection') {
             if (dc.isPointInPath(mX, mY)) {
@@ -946,6 +960,8 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
         // id, designElementName, x, y, xEnd, yEnd, border, padding, margin, groupIndex, labeltext, img data or img path
         system.layoutData.push([id, 'containerElement', itemStartX, itemStartY, itemEndX, itemEndY, 0, 0, 0, -1, '', null])
         ++system.layoutSize
+        
+        if (system.drawGrid) drawGrid(system.gridStartX, system.gridStartY, system.gridEndX, system.gridEndY)
         return id
     }
 
@@ -1390,9 +1406,6 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
     // Mainloop
     function mainloop() {
         drawItem('background', 0, 1, 2, 3, false)
-
-        if (system.drawGrid) drawGrid(system.gridStartX, system.gridStartY, system.gridEndX, system.gridEndY)
-
         renderLayoutItems()
 
         if (system.drawHighlight) {
@@ -1527,6 +1540,8 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
                 mouse.selection[5] = Math.round(mouse.selection[5] / system.gridY) * system.gridY
             }
         }
+
+        if (system.drawGrid) drawGrid(system.gridStartX, system.gridStartY, system.gridEndX, system.gridEndY)
     }
 
     function handleInputFieldInput(evt) {
@@ -1777,6 +1792,7 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
                             system.activeGroup = null
                         }
 
+                        if (system.drawGrid) drawGrid(system.gridStartX, system.gridStartY, system.gridEndX, system.gridEndY)
                         return
                     }
                 }
@@ -1986,6 +2002,7 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
         system.activeGroup = null
         mouse.selection = null
 
+        if (system.drawGrid) drawGrid(system.gridStartX, system.gridStartY, system.gridEndX, system.gridEndY)
         lg('Design loaded from slot ' + document.querySelector('#loadSlot').value.toString() + '.')
         return
     }
@@ -2049,6 +2066,7 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
             system.activeGroup = null
             mouse.selection = null
 
+            if (system.drawGrid) drawGrid(system.gridStartX, system.gridStartY, system.gridEndX, system.gridEndY)
             lg('Design loaded from slot ' + slot + '.')
             return
         } else {
@@ -2158,6 +2176,8 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
         } else if (evt.keyCode === 71) {
             // G key toggles grid
             system.drawGrid = !system.drawGrid
+            if (system.drawGrid) drawGrid(system.gridStartX, system.gridStartY, system.gridEndX, system.gridEndY)
+            else bgContext.clearRect(0, 0, system.gridEndX, system.gridEndY)
             lg('Switching grid ' + (system.drawGrid ? 'on' : 'off'))
         } else if (evt.keyCode === 67) {
             // C key starts a copy
@@ -2224,12 +2244,14 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
     }
 
     function addImageToLayout(evt) {
+        
         if (mouse.selection !== null) mouse.selection[11] = evt.target
         else {
             createLayoutContainer(mouse.x, mouse.y, mouse.x + evt.target.width, mouse.y + evt.target.height, false)
             mouse.selection = system.layoutData[system.layoutData.length - 1]
-            mouse.selection[11] = evt.target
         }
+
+        mouse.selection[11] = evt.target
         
         evt.target.removeEventListener('load', addImageToLayout)
         mouse.highlightSelection = false
@@ -2237,7 +2259,7 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
 
     function importDroppedImage(evt) {
         for (let fileItem of evt.dataTransfer.files) {
-            if (fileItem.type === 'image/jpeg' || fileItem.type === 'image/webp' || fileItem.type === 'image/jpg' || fileItem.type === 'image/png' || fileItem.type === 'image/gif') {
+            if (fileItem.type === 'image/jpeg' || fileItem.type === 'image/webp' || fileItem.type === 'image/png' || fileItem.type === 'image/gif') {
                 if (fileItem.path !== undefined) {
                     let imageMap = new Image()
                     imageMap.addEventListener('load', addImageToLayout)
@@ -2277,5 +2299,8 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
     document.addEventListener('keyup', handleKeyboardUp)
 
     document.querySelector('#savePanel').addEventListener('input', loadElectronSlot)
+
+    // Draw the initial grid on the bgCanvas
+    drawGrid(system.gridStartX, system.gridStartY, system.gridEndX, system.gridEndY)
     mainloop()
 }
