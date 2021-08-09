@@ -2137,7 +2137,10 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
                 system.storage.clear()
                 lg('Storage cleared...')
                 return
-            }
+            } 
+
+            lg('Removing desktop save files is not yet implemented.')
+            return
         } else if (evt.keyCode === 73) {
             // I key
             if (system.shiftPressed) {
@@ -2240,14 +2243,14 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
                     imageMap.addEventListener('load', addImageToLayout)
                     imageMap.src = fileItem.path
                 } else {
-                    let reader = new FileReader();
-                    reader.readAsDataURL(fileItem);
-
+                    let reader = new FileReader()
                     reader.addEventListener("load", function () {
                         let imageMap = new Image()
                         imageMap.addEventListener('load', addImageToLayout)
                         imageMap.src = reader.result
-                    }, false);
+                    }, false)
+                    
+                    reader.readAsDataURL(fileItem)
                 }
             }
         }
