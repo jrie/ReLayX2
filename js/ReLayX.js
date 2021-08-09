@@ -1238,7 +1238,8 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
     }
 
     function renderHelp() {
-        dc.fillStyle = 'rgba(0,0,0, 0.75)'
+        bgContext.clearRect(0,0, system.width, system.height)
+        dc.fillStyle = 'rgba(10, 50, 70, 0.75)'
         dc.beginPath()
         dc.rect(0, 0, canvas.width, canvas.height)
         dc.closePath()
@@ -1281,10 +1282,10 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
         dc.font = 'Normal 1em Open Sans'
         let offsetY = 90
         for (let item in shortcuts) {
-            dc.fillText(shortcuts[item], canvas.width * 0.25, (item * 22) + offsetY)
+            dc.fillText(shortcuts[item], canvas.width * 0.25, (item * 26) + offsetY)
         }
 
-        offsetY += shortcuts.length * 22 + 70
+        offsetY += shortcuts.length * 26 + 70
         dc.font = 'Bold 1.25em Open Sans'
         dc.fillText('__ First steps ________________________________________________________________________________', canvas.width * 0.25, offsetY - 32)
 
@@ -1301,10 +1302,10 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
 
         dc.font = 'Normal 1em Open Sans'
         for (let item in first) {
-            dc.fillText(first[item], canvas.width * 0.25, (item * 21) + offsetY)
+            dc.fillText(first[item], canvas.width * 0.25, (item * 26) + offsetY)
         }
 
-        offsetY += first.length * 22 + 70
+        offsetY += first.length * 26 + 70
         dc.font = 'Bold 1.25em Open Sans'
         dc.fillText('__ Grouping __________________________________________________________________________________', canvas.width * 0.25, offsetY - 32)
 
@@ -1321,10 +1322,10 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
 
         dc.font = 'Normal 1em Open Sans'
         for (let item in group) {
-            dc.fillText(group[item], canvas.width * 0.25, (item * 21) + offsetY)
+            dc.fillText(group[item], canvas.width * 0.25, (item * 26) + offsetY)
         }
 
-        offsetY += group.length * 22 + 70
+        offsetY += group.length * 26 + 70
         dc.font = 'Bold 1.25em Open Sans'
         dc.fillText('__ Mirroring __________________________________________________________________________________', canvas.width * 0.25, offsetY - 32)
 
@@ -1353,25 +1354,25 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
 
         dc.font = 'Normal 1em Open Sans'
         for (let item in mirror) {
-            dc.fillText(mirror[item], canvas.width * 0.25, (item * 21) + offsetY)
+            dc.fillText(mirror[item], canvas.width * 0.25, (item * 26) + offsetY)
         }
 
-        offsetY += mirror.length * 22 + 70
+        offsetY += mirror.length * 26 + 70
 
         dc.font = 'Bold 1.25em Open Sans'
         dc.fillText('__ Images _____________________________________________________________________________________', canvas.width * 0.25, offsetY - 32)
 
         let images = [
             'Image can be dragged and dropped into the canvas area. To insert an image, create and select a',
-            'container and drag and drop the desired image (JPG, PNG, GIF) from the desktop to the application.'
+            'container and drag and drop the desired image (JPG, PNG, GIF, WEBP) from the desktop to the application.'
         ]
 
         dc.font = 'Normal 1em Open Sans'
         for (let item in images) {
-            dc.fillText(images[item], canvas.width * 0.25, (item * 21) + offsetY)
+            dc.fillText(images[item], canvas.width * 0.25, (item * 26) + offsetY)
         }
 
-        offsetY += images.length * 22 + 70
+        offsetY += images.length * 26 + 70
 
         dc.font = 'Bold 1.25em Open Sans'
         dc.fillText('Find more @ https://github.com/jrie/ReLayX2', canvas.width * 0.25, offsetY - 32)
@@ -1414,6 +1415,7 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
             dc.fillRect(0, Math.floor(mouse.y / system.gridY) * system.gridY, canvas.width, system.gridY)
         }
 
+        if (system.showHelp) renderHelp()
         if (system.displayBrowserGrid) {
             let y = system.browserSpacingStart - mouse.offsetY
             dc.beginPath()
@@ -1430,7 +1432,6 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
 
         if (mouse.currentAction === 'drawing' || mouse.currentAction === 'mirrorSelection') drawSelection()
         if (system.showNotifications) renderNotifications()
-        if (system.showHelp) renderHelp()
 
         // Draw the input text
         if (mouse.currentAction === 'inputText') {
@@ -2165,6 +2166,8 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
                 system.drawImages = !system.drawImages
                 lg('Image display is ' + (system.drawImages ? 'enabled' : 'disabled'))
             } else system.showHelp = !system.showHelp
+            if (system.showHelp) bgContext.clearRect(300, 0, system.gridEndX-300, system.gridEndY)
+            else if (system.drawGrid) drawGrid(system.gridStartX, system.gridStartY, system.gridEndX, system.gridEndY)
             return
         } else if (evt.keyCode === 85) {
             // U key
