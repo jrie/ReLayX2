@@ -52,7 +52,7 @@ window.addEventListener('DOMContentLoaded', () => {
     document.querySelector('#loadSlot').addEventListener('change', loadData)
 
     document.querySelector('body').addEventListener('keyup', function(evt) {
-        let slotNum = ""
+        let slotNum = ''
         switch (evt.code) {
             case 'Digit1':
             case 'Digit2':
@@ -70,7 +70,7 @@ window.addEventListener('DOMContentLoaded', () => {
                 break
         }
 
-        if (slotNum !== "") {
+        if (slotNum !== '') {
             if (evt.shiftKey) saveFilePath = path.join(saveFileFolder, 'slot_'+ slotNum +'.txt')
             else loadFilePath = path.join(saveFileFolder, 'slot_' + slotNum + '.txt')
         }
