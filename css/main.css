@@ -45,24 +45,44 @@ body  {
     background-color: #000;
     color: #00ae00;
     margin: 0px;
-}
+ }
 
 .noscript_block {
     text-align: center;
     width: 100%;
 }
 
+#imgContainer img {
+  pointer-events: none;
+  user-select: none;
+}
+
+
+#relaxCanvas {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  z-index: 0;
+}
+
+
 #relaxBackground {
   position: absolute;
   left: 0px;
   top: 0px;
-  width: inherit;
-  height: inherit;
   z-index: 1;
+  pointer-events: none;
+}
+
+#relaxOverlayCanvas {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  z-index: 3;
   pointer-events: none;
 }
 
 #savePanel,
 #loadSlot {
-    display: none;
+  display: none;
 }

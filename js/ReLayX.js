@@ -43,11 +43,11 @@ function getDesign(designName, width, height) {
                 1.5, -5.5
             ]]
             design.gridStrokeColor = 'rgba(0,0,0, 0.5)'
-            design.hightlighterColor = 'rgba(0,0,0, 0.1)'
+            design.hightlighterColor = 'rgba(40,40,40,0.1)'
 
             design.itemSelectionColor = ['#cecece', '#fff']
             design.containerElement = ['solid', ['#9a9a9a']]
-            design.containerBorderColor = 'rgba(0,0,0, 0.5)'
+            design.containerBorderColor = 'rgba(0,0,0,0.5)'
             design.notificationColor = '#000'
             design.labelColor = '#ccc'
             design.helpTextColor = '#ccc'
@@ -113,8 +113,8 @@ function getDesign(designName, width, height) {
                 3.5, -3.5,
                 1.5, -5.5
             ]]
-            design.gridStrokeColor = 'rgba(255,255,255, 0.2)'
-            design.hightlighterColor = 'rgba(255,200,0, 0.1)'
+            design.gridStrokeColor = 'rgba(255,255,255,0.2)'
+            design.hightlighterColor = 'rgba(255,200,0,0.3)'
 
             design.itemSelectionColor = ['#aa4a00', '#8a1a00']
             design.containerElement = ['solid', ['rgba(56, 0, 0, 0.55)']]
@@ -157,11 +157,17 @@ let mouse = {}
 function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, gridEnd) {
 
     // General variables
+    // The main painting/container canvas
     let canvas = document.getElementById(canvasItem)
     let dc = canvas.getContext('2d')
-    
+
+    // The grid and background canvas
     let bgCanvas = document.querySelector('#relaxBackground')
     let bgContext = bgCanvas.getContext('2d')
+
+    // The mouse canvas
+    let overlayCanvas = document.querySelector('#relaxOverlayCanvas')
+    let overlayContext = overlayCanvas.getContext('2d')
 
     // Debug console shortcut
     function lg(msg) {
@@ -177,6 +183,10 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
     bgCanvas.width = width
     bgCanvas.height = height
     bgCanvas.style.cursor = 'none'
+
+    overlayCanvas.width = width
+    overlayCanvas.height = height
+    overlayCanvas.style.cursor = 'none'
     //-----------------------------------------------------------------------
 
     let design = getDesign(designName, width, height, gridX, gridY)
@@ -243,6 +253,8 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
     system.browserSpacing = 113
     system.scrollX = window.scrollX
     system.scrollY = window.scrollY
+    system.imgShadow = []
+    system.lastActionTime = 0
 
     mouse.x = 0
     mouse.y = 0
@@ -406,7 +418,7 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
         let mouseOffsetX = 0
         let mouseOffsetY = 0
         let scaleXY = 1
-        
+
         switch (mouse.currentAction) {
             case 'inputText':
                 // Cursor when we input text into labels and such
@@ -436,72 +448,70 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
         let drawingCords = activeMouse[4]
         let drawingSteps = drawingCords.length
 
-        dc.fillStyle = activeMouse[0]
-        dc.strokeStyle = activeMouse[1]
-        dc.lineJoin = activeMouse[2]
+        overlayContext.fillStyle = activeMouse[0]
+        overlayContext.strokeStyle = activeMouse[1]
+        overlayContext.lineJoin = activeMouse[2]
 
-        dc.moveTo(mouse.x + (mouseOffsetX * scaleXY), mouse.y + (mouseOffsetY * scaleXY))
-        dc.beginPath()
+        overlayContext.moveTo(mouse.x + (mouseOffsetX * scaleXY), mouse.y + (mouseOffsetY * scaleXY))
+        overlayContext.beginPath()
 
         if (activeMouse[3] === 'line') {
-            dc.lineWidth = 2
+            overlayContext.lineWidth = 2
             if (system.debugMouseDrawing) {
                 for (let index = 0; index < drawingSteps; index += 2) {
-                    dc.lineTo(mouse.x + Math.round(drawingCords[index] * scaleXY) + mouseOffsetX, mouse.y + Math.round(drawingCords[index + 1] * scaleXY) + mouseOffsetY)
+                    overlayContext.lineTo(mouse.x + Math.round(drawingCords[index] * scaleXY) + mouseOffsetX, mouse.y + Math.round(drawingCords[index + 1] * scaleXY) + mouseOffsetY)
                     console.log((Math.round(drawingCords[index] * scaleXY) + mouseOffsetX) + ', ' + (Math.round(drawingCords[index + 1] * scaleXY) + mouseOffsetY))
                 }
 
                 console.log('---------------------------------------')
             } else {
                 for (let index = 0; index < drawingSteps; index += 2) {
-                    dc.lineTo(mouse.x + Math.round(drawingCords[index] * scaleXY) + mouseOffsetX, mouse.y + Math.round(drawingCords[index + 1] * scaleXY) + mouseOffsetY)
+                    overlayContext.lineTo(mouse.x + Math.round(drawingCords[index] * scaleXY) + mouseOffsetX, mouse.y + Math.round(drawingCords[index + 1] * scaleXY) + mouseOffsetY)
                 }
             }
 
-            dc.closePath()
-            dc.stroke()
-            dc.fill()
+            overlayContext.closePath()
+            overlayContext.stroke()
+            overlayContext.fill()
         } else if (activeMouse[3] === 'stroke') {
-            dc.lineWidth = 1
+            overlayContext.lineWidth = 1
             for (let index = 0; index < drawingSteps; index += 2) {
-                dc.lineTo(mouse.x + drawingCords[index], mouse.y + drawingCords[index + 1])
+                overlayContext.lineTo(mouse.x + drawingCords[index], mouse.y + drawingCords[index + 1])
             }
 
-            dc.closePath()
-            dc.stroke()
+            overlayContext.closePath()
+            overlayContext.stroke()
         }
 
         dc.strokeStyle = '#000'
     }
 
     // Draw the grid
-    function drawGrid(startX, startY, endX, endY) {
-        let stepX = 0
-        let stepY = 0
+    function drawGrid() {
+        let currentX = system.gridStartX
+        let currentY = system.gridStartY
 
         bgContext.lineWidth = 0.5
         bgContext.strokeStyle = design.gridStrokeColor
-
-        bgContext.clearRect(0, 0, system.gridEndX, system.gridEndY)
+        bgContext.clearRect(0, 0, system.width, system.height)
         bgContext.beginPath()
 
-        while (stepY + startY <= endY) {
-            bgContext.moveTo(startX, stepY + startY)
-            bgContext.lineTo(endX, stepY + startY)
-            stepY += gridY
+        while (currentY <= system.gridEndY) {
+            bgContext.moveTo(0, currentY)
+            bgContext.lineTo(system.width, currentY)
+            currentY += gridY
         }
 
-        while (stepX + startX <= endX) {
-            bgContext.moveTo(stepX + startX, startY)
-            bgContext.lineTo(stepX + startX, endY)
-            stepX += gridX
+        while (currentX <= system.gridEndX) {
+            bgContext.moveTo(currentX, 0)
+            bgContext.lineTo(currentX, system.height)
+            currentX += gridX
         }
 
         bgContext.closePath()
         bgContext.stroke()
-        for (let container of system.layoutData) {
-            bgContext.clearRect(container[2], container[3], container[4] - container[2], container[5] - container[3])
-        }
+
+        for (let container of system.layoutData) bgContext.clearRect(container[2], container[3], container[4] - container[2], container[5] - container[3])
     }
 
     function checkMouseDown(evt) {
@@ -700,7 +710,7 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
                     return
                 }
             }
-            
+
             // Check layout container pathes            
             dc.beginPath()
             dc.rect(layoutItem[2], layoutItem[3], layoutItem[4] - layoutItem[2], layoutItem[5] - layoutItem[3])
@@ -721,7 +731,7 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
             let addedToGroup = false
             if (mouse.currentAction === 'grouping') {
                 if (mouse.previousSelection === mouse.selection && system.activeGroup === null && system.lastGroupAddition === mouse.selection[0]) return
-                
+
                 if (mouse.selection[9] === -1) {
                     // Create new group..
                     if (system.activeGroup === null && mouse.selection[9] === -1) {
@@ -734,7 +744,7 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
                         system.groups[system.activeGroup].push(mouse.selection[0])
                         mouse.selection[9] = system.activeGroup
                     }
-                   
+
                     addedToGroup = true
                     system.lastGroupAddition = mouse.selection[0]
                 } else if (system.activeGroup !== null && mouse.selection[9] !== -1 && mouse.previousSelection[9] === system.activeGroup) {
@@ -745,7 +755,7 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
                         group.splice(index, 1)
 
                         if (group.length === 1) {
-                            // Remove a group with a single item
+                            // Remove a group with a single item left
                             system.groups.splice(system.activeGroup, 1)
 
                             // Update ahead group information
@@ -769,6 +779,7 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
             //  Restore the mouse action mode
             if (mouse.previousSelection !== null && mouse.previousSelection[0] === mouse.selection[0]) mouse.currentAction = 'dragContainer'
             else mouse.currentAction = 'selected'
+
             return
         }
 
@@ -885,6 +896,8 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
         if (mouse.currentAction === 'dragContainer' || mouse.currentAction === 'dragGroup') {
             mouse.currentAction = 'selected'
         }
+
+        if (system.drawGrid) drawGrid()
     }
 
     function createLayoutContainer(mStartX, mStartY, mEndX, mEndY, useSnapping) {
@@ -960,9 +973,61 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
         // id, designElementName, x, y, xEnd, yEnd, border, padding, margin, groupIndex, labeltext, img data or img path
         system.layoutData.push([id, 'containerElement', itemStartX, itemStartY, itemEndX, itemEndY, 0, 0, 0, -1, '', null])
         ++system.layoutSize
-        
-        if (system.drawGrid) drawGrid(system.gridStartX, system.gridStartY, system.gridEndX, system.gridEndY)
+
+        if (system.drawGrid) drawGrid()
         return id
+    }
+
+    // Render the resizers
+    function drawResizers() {
+        // If nothing is selected simply return
+        if (mouse.selection === null) return
+
+        for (let index = 0; index < design.resizers['start'].length; ++index) {
+            let startX = design.resizers['start'][index][0] === 0 ? mouse.selection[2] : mouse.selection[4]
+            let startY = design.resizers['start'][index][1] === 0 ? mouse.selection[3] : mouse.selection[5]
+
+            overlayContext.fillStyle = design.resizeCorners[0]
+            overlayContext.beginPath()
+            for (let coordinate of design.resizers['coords'][index]) overlayContext.lineTo(startX + coordinate[0], startY + coordinate[1])
+            overlayContext.closePath()
+            overlayContext.fill()
+            overlayContext.lineWidth = 1
+            overlayContext.strokeStyle = design.resizeCorners[2]
+            overlayContext.stroke()
+
+            if (mouse.selection !== null && overlayContext.isPointInPath(mouse.x, mouse.y)) {
+                overlayContext.fillStyle = design.resizeCorners[1]
+                overlayContext.beginPath()
+                for (let coordinate of design.resizers['coords'][index]) overlayContext.lineTo(startX + coordinate[0], startY + coordinate[1])
+                overlayContext.closePath()
+                overlayContext.fill()
+            }
+        }
+    }
+    // Draw labes for a particular layout item
+    function drawLabels(layoutItem) {
+        overlayContext.textAlign = 'center'
+        overlayContext.font = 'Normal 0.75em Open Sans'
+
+        let centerX = layoutItem[2] + ((layoutItem[4] - layoutItem[2]) * 0.5)
+        let centerY = layoutItem[3] + ((layoutItem[5] - layoutItem[3]) * 0.5)
+
+        let textWidth = (overlayContext.measureText(layoutItem[10]).width * 0.5);
+        if (textWidth !== 0) textWidth += 6
+
+        let textSizes = (overlayContext.measureText((layoutItem[4] - layoutItem[2]).toFixed(0) + 'x' + (layoutItem[5] - layoutItem[3]).toFixed(0) + 'px').width * 0.5) + 6
+        let textCoords = (overlayContext.measureText('(' + layoutItem[2].toFixed(0) + ', ' + layoutItem[3].toFixed(0) + ')').width * 0.5) + 6
+
+        overlayContext.fillStyle = design.contentInputBackground
+        overlayContext.fillRect(centerX - textWidth, centerY - 44, textWidth * 2, 24)
+        overlayContext.fillRect(centerX - textSizes, centerY - 15, textSizes * 2, 24)
+        overlayContext.fillRect(centerX - textCoords, centerY + 10, textCoords * 2, 24)
+
+        overlayContext.fillStyle = design.labelColor
+        overlayContext.fillText(layoutItem[10], centerX, centerY - 28)
+        overlayContext.fillText((layoutItem[4] - layoutItem[2]).toFixed(0) + 'x' + (layoutItem[5] - layoutItem[3]).toFixed(0) + 'px', centerX, centerY)
+        overlayContext.fillText('(' + layoutItem[2].toFixed(0) + ', ' + layoutItem[3].toFixed(0) + ')', centerX, centerY + 25)
     }
 
     // Render the layout items
@@ -984,35 +1049,16 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
                     dc.stroke()
                 }
 
+                // Draw containers
                 if (system.drawContainers) dc.fillRect(layoutItem[2], layoutItem[3], layoutItem[4] - layoutItem[2], layoutItem[5] - layoutItem[3])
+
+                // Draw container images if present
                 if (system.drawImages && layoutItem[11] !== null && layoutItem[11] !== '') {
                     dc.drawImage(layoutItem[11], layoutItem[2], layoutItem[3], layoutItem[4] - layoutItem[2], layoutItem[5] - layoutItem[3])
                 }
 
                 // Draw the labels
-                if (system.drawLabels && !system.showHelp) {
-                    dc.textAlign = 'center'
-                    dc.font = 'Normal 0.75em Open Sans'
-
-                    let centerX = layoutItem[2] + ((layoutItem[4] - layoutItem[2]) * 0.5)
-                    let centerY = layoutItem[3] + ((layoutItem[5] - layoutItem[3]) * 0.5)
-
-                    let textWidth = (dc.measureText(layoutItem[10]).width * 0.5);
-                    if (textWidth !== 0) textWidth += 6
-
-                    let textSizes = (dc.measureText((layoutItem[4] - layoutItem[2]).toFixed(0) + 'x' + (layoutItem[5] - layoutItem[3]).toFixed(0) + 'px').width * 0.5) + 6
-                    let textCoords = (dc.measureText('(' + layoutItem[2].toFixed(0) + ', ' + layoutItem[3].toFixed(0) + ')').width * 0.5) + 6
-
-                    dc.fillStyle = design.contentInputBackground
-                    dc.fillRect(centerX - textWidth, centerY - 44, textWidth * 2, 24)
-                    dc.fillRect(centerX - textSizes, centerY - 15, textSizes * 2, 24)
-                    dc.fillRect(centerX - textCoords, centerY + 10, textCoords * 2, 24)
-
-                    dc.fillStyle = design.labelColor
-                    dc.fillText(layoutItem[10], centerX, centerY - 28)
-                    dc.fillText((layoutItem[4] - layoutItem[2]).toFixed(0) + 'x' + (layoutItem[5] - layoutItem[3]).toFixed(0) + 'px', centerX, centerY)
-                    dc.fillText('(' + layoutItem[2].toFixed(0) + ', ' + layoutItem[3].toFixed(0) + ')', centerX, centerY + 25)
-                }
+                if (system.drawLabels && !system.showHelp) drawLabels(layoutItem)
             }
         } else {
             for (let layoutItem of system.layoutData) {
@@ -1028,13 +1074,14 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
                     dc.stroke()
                 }
 
-                if (!system.drawContainers) if (system.drawImages && layoutItem[11] !== null && layoutItem[11] !== '') dc.drawImage(layoutItem[11], layoutItem[2], layoutItem[3], layoutItem[4] - layoutItem[2], layoutItem[5] - layoutItem[3])
+                // If container drawing is off, enable image rendering
+                if (!system.drawContainers && system.drawImages && layoutItem[11] !== null && layoutItem[11] !== '') dc.drawImage(layoutItem[11], layoutItem[2], layoutItem[3], layoutItem[4] - layoutItem[2], layoutItem[5] - layoutItem[3])
 
                 if (system.drawContainers) {
                     if (system.activeGroup !== null && layoutItem[9] === system.activeGroup && mouse.selection[9] === layoutItem[9]) {
-                    if (mouse.selection[0] === layoutItem[0]) dc.fillStyle = design.itemSelectionColor[1]
-                    else dc.fillStyle = design.itemSelectionColor[0]
-                    
+                        if (mouse.selection[0] === layoutItem[0]) dc.fillStyle = design.itemSelectionColor[1]
+                        else dc.fillStyle = design.itemSelectionColor[0]
+
                         dc.fillRect(layoutItem[2], layoutItem[3], layoutItem[4] - layoutItem[2], layoutItem[5] - layoutItem[3])
                     } else if (mouse.selection[0] === layoutItem[0]) {
                         dc.fillStyle = design.itemSelectionColor[0]
@@ -1044,70 +1091,39 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
                         dc.fillRect(layoutItem[2], layoutItem[3], layoutItem[4] - layoutItem[2], layoutItem[5] - layoutItem[3])
                     }
 
-                    // Draw resizes and image if present
+                    // Draw resizers and image if present
                     if (system.drawResizers && mouse.selection === layoutItem) {
-                        if (system.drawImages && layoutItem[11] !== null && layoutItem[11] !== '') dc.drawImage(layoutItem[11], layoutItem[2], layoutItem[3], layoutItem[4] - layoutItem[2], layoutItem[5] - layoutItem[3])
-                        for (let index = 0; index < design.resizers['start'].length; ++index) {
-                            let startX = design.resizers['start'][index][0] === 0 ? layoutItem[2] : layoutItem[4]
-                            let startY = design.resizers['start'][index][1] === 0 ? layoutItem[3] : layoutItem[5]
-
-                            dc.fillStyle = design.resizeCorners[0]
-                            dc.beginPath()
-                            for (let coordinate of design.resizers['coords'][index]) dc.lineTo(startX + coordinate[0], startY + coordinate[1])
-                            dc.closePath()
-                            dc.fill()
-                            dc.lineWidth = 1
-                            dc.strokeStyle = design.resizeCorners[2]
-                            dc.stroke()
-
-                            if (mouse.selection !== null && dc.isPointInPath(mouse.x, mouse.y)) {
-                                dc.fillStyle = design.resizeCorners[1]
-                                dc.beginPath()
-                                for (let coordinate of design.resizers['coords'][index]) dc.lineTo(startX + coordinate[0], startY + coordinate[1])
-                                dc.closePath()
-                                dc.fill()
+                        if (system.drawImages && layoutItem[11] !== null && layoutItem[11] !== '') {
+                            if (system.imgShadow.indexOf(layoutItem[0]) !== -1) {
+                                let targetImage = document.querySelector('#img_' + layoutItem[0])
+                                targetImage.style.visibility = 'visible'
+                                targetImage.style.left = layoutItem[2] + 'px'
+                                targetImage.style.top = layoutItem[3] + 'px'
+                                targetImage.style.width = (layoutItem[4] - layoutItem[2]) + 'px'
+                                targetImage.style.height = (layoutItem[5] - layoutItem[3]) + 'px'
+                            } else dc.drawImage(layoutItem[11], layoutItem[2], layoutItem[3], layoutItem[4] - layoutItem[2], layoutItem[5] - layoutItem[3])
+                        } else if (!system.drawImages) {
+                            if (system.imgShadow.indexOf(layoutItem[0]) !== -1) {
+                                let targetImage = document.querySelector('#img_' + layoutItem[0])
+                                targetImage.style.visibility = 'hidden'
                             }
                         }
+
+                        drawResizers()
                     }
                 }
 
+                // Draw the highlighting border of the container drop target
                 if (mouse.highlightSelection && mouse.selection[0] === layoutItem[0]) {
-                    dc.lineWidth = 3
-                    dc.strokeStyle = design.itemSelectionColor
-                    
-                    dc.beginPath()
-                    dc.rect(mouse.selection[2], mouse.selection[3], mouse.selection[4] - mouse.selection[2], mouse.selection[5] - mouse.selection[3])
-                    dc.stroke()
+                    overlayContext.lineWidth = 3
+                    overlayContext.strokeStyle = design.itemSelectionColor
+                    overlayContext.beginPath()
+                    overlayContext.rect(mouse.selection[2], mouse.selection[3], mouse.selection[4] - mouse.selection[2], mouse.selection[5] - mouse.selection[3])
+                    overlayContext.stroke()
                 }
-                
+
                 // Draw the labels
-                if (system.drawLabels) {
-                    let centerX = layoutItem[2] + ((layoutItem[4] - layoutItem[2]) * 0.5)
-                    let centerY = layoutItem[3] + ((layoutItem[5] - layoutItem[3]) * 0.5)
-
-                    dc.fillStyle = design.labelColor
-                    dc.textAlign = 'center'
-                    dc.font = 'Normal 0.75em Open Sans'
-
-                    let textWidth = (dc.measureText(layoutItem[10]).width * 0.5);
-                    if (textWidth !== 0) textWidth += 6
-
-                    let textSizes = (dc.measureText((layoutItem[4] - layoutItem[2]).toFixed(0) + 'x' + (layoutItem[5] - layoutItem[3]).toFixed(0) + 'px').width * 0.5) + 6
-                    let textCoords = (dc.measureText('(' + layoutItem[2].toFixed(0) + ', ' + layoutItem[3].toFixed(0) + ')').width * 0.5) + 6
-
-
-                    dc.fillStyle = design.contentInputBackground
-                    dc.fillRect(centerX - textWidth, centerY - 44, textWidth * 2, 24)
-                    dc.fillRect(centerX - textSizes, centerY - 15, textSizes * 2, 24)
-                    dc.fillRect(centerX - textCoords, centerY + 10, textCoords * 2, 24)
-
-                    dc.fillStyle = design.labelColor
-                    dc.fillText(layoutItem[10], centerX, centerY - 28)
-                    dc.fillText((layoutItem[4] - layoutItem[2]).toFixed(0) + 'x' + (layoutItem[5] - layoutItem[3]).toFixed(0) + 'px', centerX, centerY)
-                    dc.fillText('(' + layoutItem[2].toFixed(0) + ', ' + layoutItem[3].toFixed(0) + ')', centerX, centerY + 25)
-                }
-                
-                
+                if (system.drawLabels) drawLabels(layoutItem)
             }
         }
     }
@@ -1226,7 +1242,6 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
                             startY -= system.spaceGridY + containerY
                         }
                     }
-
                 }
             }
         }
@@ -1238,13 +1253,15 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
     }
 
     function renderHelp() {
-        bgContext.clearRect(0,0, system.width, system.height)
-        dc.fillStyle = 'rgba(10, 50, 70, 0.75)'
-        dc.beginPath()
-        dc.rect(0, 0, canvas.width, canvas.height)
-        dc.closePath()
-        dc.fill()
-        dc.textAlign = 'left'
+        bgContext.clearRect(0, 0, system.width, system.height)
+        overlayContext.clearRect(0, 0, system.width, system.height)
+
+        overlayContext.fillStyle = 'rgba(33, 37, 52, 1.0)'
+        overlayContext.beginPath()
+        overlayContext.rect(0, 0, system.width, system.height)
+        overlayContext.closePath()
+        overlayContext.fill()
+        overlayContext.textAlign = 'left'
 
         let shortcuts = ['[I] Toggles this help on/off',
             '[G] key toggles the grid on an off, [Shift + G] toggles custom designs',
@@ -1269,29 +1286,30 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
             '[Shift + Arrow up, down, left or right] Moves the current selected container up, down, left or right',
             '[1 to 9] Loads the design from slot 1 to 9, [SHIFT + 1 ... 9] saves a design to slot 1 to 9',
             'in the desktop version this will also save the designs to "saves/slot_NUMBER.txt". The browser version',
-            'only uses the browsers local storage but is limited to 5 to 10 MB.',
+            'only uses the browsers local storage but is limited to 5 up to 10 MB depending on the browser used.',
             '[Shift + BACKSPACE] Clears all saved data',
             '[L] Create or rename a labeled item if selected, if nothing is selected, turns label rendering on or off'
         ]
 
-        dc.fillStyle = design.helpTextColor
+        overlayContext.fillStyle = design.helpTextColor
 
-        dc.font = 'Bold 1.25em Open Sans'
-        dc.fillText('__ ReLayX Shortcuts _______________________________________________________________________', canvas.width * 0.25, 60)
+        overlayContext.font = 'Bold 1.25em Open Sans'
+        overlayContext.fillText('__ ReLayX Shortcuts _______________________________________________________________________', canvas.width * 0.25, 60)
 
-        dc.font = 'Normal 1em Open Sans'
+        overlayContext.font = 'Normal 1em Open Sans'
         let offsetY = 90
         for (let item in shortcuts) {
-            dc.fillText(shortcuts[item], canvas.width * 0.25, (item * 26) + offsetY)
+            overlayContext.fillText(shortcuts[item], canvas.width * 0.25, (item * 26) + offsetY)
         }
 
         offsetY += shortcuts.length * 26 + 70
-        dc.font = 'Bold 1.25em Open Sans'
-        dc.fillText('__ First steps ________________________________________________________________________________', canvas.width * 0.25, offsetY - 32)
+        overlayContext.font = 'Bold 1.25em Open Sans'
+        overlayContext.fillText('__ First steps ________________________________________________________________________________', canvas.width * 0.25, offsetY - 32)
 
         let first = [
             'Click and drag to create a selection, release the mouse to create a container item.',
-            'The container can now be moved by pressing left, to activate, and dragging. Notice the color change when selected.',
+            'The container can now be moved by pressing left, to activate, and dragging. Notice the color change when',
+            'selected.',
             '',
             'If you want to snap the item to the grid, you can press [SHIFT] to do so, this also snaps the container into the grid.',
             'To delete the container press [DEL].',
@@ -1300,14 +1318,14 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
             'snapping can be used here too when holding [SHIFT] while pressing [V] once.'
         ]
 
-        dc.font = 'Normal 1em Open Sans'
+        overlayContext.font = 'Normal 1em Open Sans'
         for (let item in first) {
-            dc.fillText(first[item], canvas.width * 0.25, (item * 26) + offsetY)
+            overlayContext.fillText(first[item], canvas.width * 0.25, (item * 26) + offsetY)
         }
 
         offsetY += first.length * 26 + 70
-        dc.font = 'Bold 1.25em Open Sans'
-        dc.fillText('__ Grouping __________________________________________________________________________________', canvas.width * 0.25, offsetY - 32)
+        overlayContext.font = 'Bold 1.25em Open Sans'
+        overlayContext.fillText('__ Grouping __________________________________________________________________________________', canvas.width * 0.25, offsetY - 32)
 
         let group = [
             'If you have two or more containers, you can group them together. This can be done by selecting',
@@ -1320,14 +1338,14 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
             'holding [CONTROL], on it again, its then ungrouped. This is also shown by its colors.'
         ]
 
-        dc.font = 'Normal 1em Open Sans'
+        overlayContext.font = 'Normal 1em Open Sans'
         for (let item in group) {
-            dc.fillText(group[item], canvas.width * 0.25, (item * 26) + offsetY)
+            overlayContext.fillText(group[item], canvas.width * 0.25, (item * 26) + offsetY)
         }
 
         offsetY += group.length * 26 + 70
-        dc.font = 'Bold 1.25em Open Sans'
-        dc.fillText('__ Mirroring __________________________________________________________________________________', canvas.width * 0.25, offsetY - 32)
+        overlayContext.font = 'Bold 1.25em Open Sans'
+        overlayContext.fillText('__ Mirroring __________________________________________________________________________________', canvas.width * 0.25, offsetY - 32)
 
         let mirror = [
             'The simplest way to test mirroring is by drawing a selection and keep holding the left mouse button',
@@ -1352,30 +1370,33 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
             'pressing [Q] or [W].'
         ]
 
-        dc.font = 'Normal 1em Open Sans'
+        overlayContext.font = 'Normal 1em Open Sans'
         for (let item in mirror) {
-            dc.fillText(mirror[item], canvas.width * 0.25, (item * 26) + offsetY)
+            overlayContext.fillText(mirror[item], canvas.width * 0.25, (item * 26) + offsetY)
         }
 
         offsetY += mirror.length * 26 + 70
 
-        dc.font = 'Bold 1.25em Open Sans'
-        dc.fillText('__ Images _____________________________________________________________________________________', canvas.width * 0.25, offsetY - 32)
+        overlayContext.font = 'Bold 1.25em Open Sans'
+        overlayContext.fillText('__ Images _____________________________________________________________________________________', canvas.width * 0.25, offsetY - 32)
 
         let images = [
-            'Image can be dragged and dropped into the canvas area. To insert an image, create and select a',
-            'container and drag and drop the desired image (JPG, PNG, GIF, WEBP) from the desktop to the application.'
+            'Images can be dragged and dropped into the canvas area. To insert an image, create and select a',
+            'container and drag and drop the desired image (JPG, PNG, GIF, WEBP) from the desktop to the application.',
+            '',
+            'Also it is possible to insert a image in its original width and height, by not having any selection and',
+            'dropping the image onto a free space.'
         ]
 
-        dc.font = 'Normal 1em Open Sans'
+        overlayContext.font = 'Normal 1em Open Sans'
         for (let item in images) {
-            dc.fillText(images[item], canvas.width * 0.25, (item * 26) + offsetY)
+            overlayContext.fillText(images[item], canvas.width * 0.25, (item * 26) + offsetY)
         }
 
         offsetY += images.length * 26 + 70
 
-        dc.font = 'Bold 1.25em Open Sans'
-        dc.fillText('Find more @ https://github.com/jrie/ReLayX2', canvas.width * 0.25, offsetY - 32)
+        overlayContext.font = 'Bold 1.25em Open Sans'
+        overlayContext.fillText('Find more @ https://github.com/jrie/ReLayX2', canvas.width * 0.25, offsetY - 32)
     }
 
     function renderNotifications() {
@@ -1407,15 +1428,24 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
     // Mainloop
     function mainloop() {
         drawItem('background', 0, 1, 2, 3, false)
+
+        if (system.drawHighlight) {
+            overlayContext.clearRect(0, 0, system.width, system.height)
+        }
+
         renderLayoutItems()
 
         if (system.drawHighlight) {
-            dc.fillStyle = design.hightlighterColor
-            dc.fillRect(Math.floor(mouse.x / system.gridX) * system.gridX, 0, system.gridX, canvas.height)
-            dc.fillRect(0, Math.floor(mouse.y / system.gridY) * system.gridY, canvas.width, system.gridY)
+            overlayContext.fillStyle = design.hightlighterColor
+            overlayContext.fillRect(Math.floor(mouse.x / system.gridX) * system.gridX, 0, system.gridX, canvas.height)
+            overlayContext.fillRect(0, Math.floor(mouse.y / system.gridY) * system.gridY, canvas.width, system.gridY)
         }
 
+        // Render included help overlay
         if (system.showHelp) renderHelp()
+
+        // Display the browser scrolling grid
+        // TODO: Might need a little redo in spacing size
         if (system.displayBrowserGrid) {
             let y = system.browserSpacingStart - mouse.offsetY
             dc.beginPath()
@@ -1435,29 +1465,27 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
 
         // Draw the input text
         if (mouse.currentAction === 'inputText') {
-            dc.fillStyle = design.contentInputFieldText;
+            overlayContext.fillStyle = design.contentInputFieldText;
             // Draw the input cursor in demand
             if (++mouse.cursorBlink === mouse.cursorBlinkRate) {
                 mouse.cursorBlink = 0;
                 mouse.showCursor = !mouse.showCursor
             }
-            
+
             if (mouse.showCursor) {
-                dc.beginPath();
-                dc.moveTo(mouse.cursorAt[0], mouse.cursorAt[1]);
-                dc.lineTo(mouse.cursorAt[0], mouse.cursorAt[1] + 12);
-                dc.closePath();
-                dc.strokeStyle = design.textCursor[0];
-                dc.lineWidth = design.textCursor[1];
-                dc.stroke();
+                overlayContext.beginPath();
+                overlayContext.moveTo(mouse.cursorAt[0], mouse.cursorAt[1]);
+                overlayContext.lineTo(mouse.cursorAt[0], mouse.cursorAt[1] + 12);
+                overlayContext.closePath();
+                overlayContext.strokeStyle = design.textCursor[0];
+                overlayContext.lineWidth = design.textCursor[1];
+                overlayContext.stroke();
             }
         }
 
         drawMouse()
-
         window.requestAnimationFrame(mainloop)
     }
-
 
     // Bind the mouse to the current window
     function handleMouseMove(evt) {
@@ -1469,7 +1497,7 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
 
         mouse.x = evt.clientX - mouse.offsetX + system.scrollX - canvas.offsetTop
         mouse.y = evt.clientY - mouse.offsetY + system.scrollY - canvas.offsetLeft
-        
+
         if (mouse.currentAction === 'dragContainer' || (system.activeGroup === null && mouse.currentAction === 'dragGroup')) {
             mouse.selection[2] += mouse.x - mousePreviousX
             mouse.selection[3] += mouse.y - mousePreviousY
@@ -1500,6 +1528,12 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
                         layoutItem[4] = Math.round(layoutItem[4] / system.gridX) * system.gridX
                         layoutItem[5] = Math.round(layoutItem[5] / system.gridY) * system.gridY
                     }
+
+                    if (system.imgShadow.indexOf(layoutItem[0]) !== -1) {
+                        let shadowImage = document.querySelector('#imgContainer #img_' + layoutItem[0])
+                        shadowImage.style.left = layoutItem[2] + 'px'
+                        shadowImage.style.top = layoutItem[3] + 'px'
+                    }
                 }
             }
         } else if (mouse.selection !== null && mouse.currentAction === 'resizeCorner' && mouse.hasCorner !== null) {
@@ -1508,7 +1542,7 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
                 // Top left
                 mouse.selection[2] = mouse.x - mouse.hasCornerPx[0]
                 mouse.selection[3] = mouse.y - mouse.hasCornerPx[1]
-             
+
                 if (mouse.selection[4] - mouse.selection[2] < 50) mouse.selection[2] = mouse.selection[4] - 50
                 if (mouse.selection[5] - mouse.selection[3] < 50) mouse.selection[3] = mouse.selection[5] - 50
             } else if (mouse.hasCorner[0] === 1 && mouse.hasCorner[1] === 0) {
@@ -1542,7 +1576,7 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
             }
         }
 
-        if (system.drawGrid) drawGrid(system.gridStartX, system.gridStartY, system.gridEndX, system.gridEndY)
+        //if (system.drawGrid) drawGrid()
     }
 
     function handleInputFieldInput(evt) {
@@ -1591,7 +1625,7 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
                 return
                 break
             case 9:
-                // Tabulator
+                // Tab key
                 evt.preventDefault()
                 break
             case 32:
@@ -1695,10 +1729,8 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
         }
 
         if (system.shiftPressed && mouse.selection !== null) {
-            evt.preventDefault()
-            evt.stopPropagation()
             system.keyMap[evt.keyCode] = true
-            if (system.keyMap['38'] !== undefined) {
+            if (system.keyMap['38'] === true) {
                 // Arrow key up
                 if (mouse.selection[3] > system.gridX) {
                     mouse.selection[3] -= system.gridX
@@ -1708,8 +1740,8 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
                     mouse.selection[3] = 0
                 }
             }
-            
-            if (system.keyMap['40'] !== undefined) {
+
+            if (system.keyMap['40'] === true) {
                 // Arrow key down
                 if (mouse.selection[5] < system.height) {
                     mouse.selection[3] += system.gridX
@@ -1719,8 +1751,8 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
                     mouse.selection[5] = system.height
                 }
             }
-            
-            if (system.keyMap['37'] !== undefined) {
+
+            if (system.keyMap['37'] === true) {
                 // Arrow key left
                 if (mouse.selection[2] > system.gridY) {
                     mouse.selection[2] -= system.gridY
@@ -1730,8 +1762,8 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
                     mouse.selection[2] = 0
                 }
             }
-            
-            if (system.keyMap['39'] !== undefined) {
+
+            if (system.keyMap['39'] === true) {
                 // Arrow key right
                 if (mouse.selection[4] < system.width) {
                     mouse.selection[2] += system.gridY
@@ -1752,6 +1784,15 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
                     if (system.layoutData[item][0] === mouse.selection[0]) {
                         hasNewSelection = false
 
+                        // Remove the underlying animated image if present
+                        let shadowIndex = system.imgShadow.indexOf(mouse.selection[0])
+                        if (shadowIndex !== -1) {
+                            let targetImage = document.querySelector('#img_' + mouse.selection[0])
+                            targetImage.parentNode.removeChild(targetImage)
+                            system.imgShadow.splice(shadowIndex, 1)
+                        }
+
+                        // Remove the container and jump to next in line in case of groups
                         for (let groupIndex = 0; groupIndex < system.groups.length; groupIndex++) {
                             let itemIndex = system.groups[groupIndex].indexOf(mouse.selection[0])
                             if (itemIndex !== -1) {
@@ -1779,6 +1820,7 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
 
                         system.layoutData.splice(item, 1)
                         --system.layoutSize
+
                         for (let group = 0; group < system.groups.length; group++) {
                             for (let layoutItem of system.layoutData) {
                                 if (system.groups[group].indexOf(layoutItem[0]) !== -1) {
@@ -1793,7 +1835,7 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
                             system.activeGroup = null
                         }
 
-                        if (system.drawGrid) drawGrid(system.gridStartX, system.gridStartY, system.gridEndX, system.gridEndY)
+                        if (system.drawGrid) drawGrid()
                         return
                     }
                 }
@@ -1915,32 +1957,78 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
 
         let layoutKey = 'layout_' + slot
         let layoutSubKey = layoutKey + '_'
-        system.storage.setItem(layoutKey, true)
-
+        let hasError = false
         let item = 0
         savePanel.textContent = ''
-        
+
+        try {
+            system.storage.setItem(layoutKey, true)
+        } catch (err) {
+            if (err.code === DOMException.QUOTA_EXCEEDED_ERR) {
+                alert('Could not save data because of storage limit.\n\nError: "' + err.name + '"\nMessage: ' + err.message)
+                system.shiftPressed = false
+                return
+            }
+        }
+
         for (item = 0; item < system.layoutSize; item++) {
             if (system.layoutData[item][11] !== null) {
                 let temp = system.layoutData[item][11]
                 system.layoutData[item][11] = system.layoutData[item][11].src.toString().replace(/\,/g, '|||')
-                system.storage.setItem(layoutSubKey + item, system.layoutData[item].join('|#|'))
+                try {
+                    system.storage.setItem(layoutSubKey + item, system.layoutData[item].join('|#|'))
+                } catch (err) {
+                    if (err.code === DOMException.QUOTA_EXCEEDED_ERR) {
+                        system.layoutData[item][11] = temp
+                        alert('Could not save data because of storage limit.\n\nError: "' + err.name + '"\nMessage: ' + err.message)
+                        system.shiftPressed = false
+                        system.storage.removeItem(layoutKey)
+                        hasError = true
+                    }
+
+                    break
+                }
                 savePanel.textContent += system.layoutData[item].join('|#|') + '\n'
                 system.layoutData[item][11] = temp
             } else {
-                system.storage.setItem(layoutSubKey + item, system.layoutData[item].join('|#|'))
+                try {
+                    system.storage.setItem(layoutSubKey + item, system.layoutData[item].join('|#|'))
+                } catch (err) {
+                    if (err.code === DOMException.QUOTA_EXCEEDED_ERR) {
+                        system.layoutData[item][11] = temp
+                        system.storage.removeItem(layoutKey)
+                        alert('Could not save data because of storage limit.\n\nError: "' + err.name + '"\nMessage: ' + err.message)
+                        system.shiftPressed = false
+                        hasError = true
+                    }
+
+                    break
+                }
                 savePanel.textContent += system.layoutData[item].join('|#|') + '\n'
             }
         }
 
-        if (navigator.userAgent.toLowerCase().indexOf('electron/') !== -1) {
-            document.querySelector('#savePanel').dispatchEvent(new Event('change'))
-        } else {
-            system.storage.setItem(layoutSubKey + item, false)
-        }
+        if (!hasError) {
+            if (navigator.userAgent.toLowerCase().indexOf('electron/') !== -1) {
+                document.querySelector('#savePanel').dispatchEvent(new Event('change'))
+            } else {
+                system.storage.setItem(layoutSubKey + item, false)
+            }
 
-        lg('Design saved in slot ' + slot + '.')
-        return
+            lg('Design saved in slot ' + slot + '.')
+            return
+        }
+        
+        let currentKey = system.storage.key(0)
+        let keyIndex = 0
+        
+        while (currentKey !== null) {
+            if (currentKey.startsWith(layoutKey)) system.storage.removeItem(currentKey)
+            currentKey = system.storage.key(keyIndex++)
+        }
+        
+        lg('Error saving design, ran out of browser space.')
+
     }
 
     function loadElectronSlot(evt) {
@@ -1951,13 +2039,18 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
 
         system.layoutData = []
         system.layoutSize = 0
+        system.shadowImages = []
         system.groups = []
         system.activeGroup = null
         mouse.selection = null
 
+        let shadowImages = document.querySelectorAll('#imgContainer img')
+        for (let shadowImage of shadowImages) shadowImage.parentNode.removeChild(shadowImage)
+
         let groupIndexes = []
 
         let storageData = evt.target.textContent.split('\n')
+
         for (let line of storageData) {
             if (line.length === 0) continue
             let storageItemData = line.split('|#|')
@@ -1966,13 +2059,17 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
 
                 // Handle image data specially
                 if (key === 11) {
+
                     if (storageItemData[11] === '') storageItemData[11] = null
                     else {
-                        let image = new Image()
-                        if (storageItemData[11].startsWith('data:')) image.src = storageItemData[11].replace(/\|\|\|/gm, ',')
-                        else image.src = storageItemData[11]
+                        let imageMap = new Image()
+                        imageMap.dataset['containerId'] = storageItemData[0]
+                        if (storageItemData[11].toLowerCase().indexOf('.gif') === -1) imageMap.addEventListener('load', addImageToLayout)
+                        else imageMap.addEventListener('load', addAnimatedImageToLayout)
+                        if (storageItemData[11].startsWith('data:')) imageMap.src = storageItemData[11].replace(/\|\|\|/gm, ',')
+                        else imageMap.src = storageItemData[11]
 
-                        storageItemData[11] = image
+                        storageItemData[11] = imageMap
                     }
                     continue
                 }
@@ -2003,7 +2100,7 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
         system.activeGroup = null
         mouse.selection = null
 
-        if (system.drawGrid) drawGrid(system.gridStartX, system.gridStartY, system.gridEndX, system.gridEndY)
+        if (system.drawGrid) drawGrid()
         lg('Design loaded from slot ' + document.querySelector('#loadSlot').value.toString() + '.')
         return
     }
@@ -2016,11 +2113,14 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
         if (system.storage.getItem(layoutKey) !== null) {
             system.layoutData = []
             system.layoutSize = 0
+            system.imgShadow = []
             system.groups = []
             system.activeGroup = null
             mouse.selection = null
 
             let groupIndexes = []
+            let shadowImages = document.querySelectorAll('#imgContainer img')
+            for (let shadowImage of shadowImages) shadowImage.parentNode.removeChild(shadowImage)
 
             while (system.storage.getItem(layoutSubKey + layoutIndex) !== null && system.storage.getItem(layoutSubKey + layoutIndex) !== 'false') {
 
@@ -2034,8 +2134,22 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
                             let image = new Image()
                             if (storageItemData[11].startsWith('data:')) image.src = storageItemData[11].replace(/\|\|\|/gm, ',')
                             else image.src = storageItemData[11]
+                            
+                            if (storageItemData[11] === '') storageItemData[11] = null
+                            else {
+                                let imageMap = new Image()
+                                imageMap.dataset['containerId'] = storageItemData[0]
+                                if (storageItemData[11].toLowerCase().indexOf('image/gif') === -1) imageMap.addEventListener('load', addImageToLayout)
+                                else imageMap.addEventListener('load', addAnimatedImageToLayout)
 
-                            storageItemData[11] = image
+                                if (storageItemData[11].startsWith('data:')) imageMap.src = storageItemData[11].replace(/\|\|\|/gm, ',')
+                                else imageMap.src = storageItemData[11]
+
+                                storageItemData[11] = imageMap
+                            }
+                            continue
+
+                            //storageItemData[11] = image
                         }
                         continue
                     }
@@ -2067,7 +2181,7 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
             system.activeGroup = null
             mouse.selection = null
 
-            if (system.drawGrid) drawGrid(system.gridStartX, system.gridStartY, system.gridEndX, system.gridEndY)
+            if (system.drawGrid) drawGrid()
             lg('Design loaded from slot ' + slot + '.')
             return
         } else {
@@ -2096,6 +2210,8 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
             return
         }
 
+        if (system.drawGrid) drawGrid()
+
         if (evt.keyCode === 17) {
             // Ctrl key
             system.ctrlPressed = false
@@ -2108,7 +2224,7 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
         if (evt.keyCode === 16) {
             // Shift key - grid snapping off
             evt.preventDefault()
-            
+
             // Strg key
             mouse.snapToGrid = false
             system.shiftPressed = false
@@ -2156,7 +2272,7 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
                 system.storage.clear()
                 lg('Storage cleared...')
                 return
-            } 
+            }
 
             lg('Removing desktop save files is not yet implemented.')
             return
@@ -2166,8 +2282,7 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
                 system.drawImages = !system.drawImages
                 lg('Image display is ' + (system.drawImages ? 'enabled' : 'disabled'))
             } else system.showHelp = !system.showHelp
-            if (system.showHelp) bgContext.clearRect(300, 0, system.gridEndX-300, system.gridEndY)
-            else if (system.drawGrid) drawGrid(system.gridStartX, system.gridStartY, system.gridEndX, system.gridEndY)
+            if (!system.showHelp && system.drawGrid) drawGrid()
             return
         } else if (evt.keyCode === 85) {
             // U key
@@ -2179,7 +2294,7 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
         } else if (evt.keyCode === 71) {
             // G key toggles grid
             system.drawGrid = !system.drawGrid
-            if (system.drawGrid) drawGrid(system.gridStartX, system.gridStartY, system.gridEndX, system.gridEndY)
+            if (system.drawGrid) drawGrid()
             else bgContext.clearRect(0, 0, system.gridEndX, system.gridEndY)
             lg('Switching grid ' + (system.drawGrid ? 'on' : 'off'))
         } else if (evt.keyCode === 67) {
@@ -2247,16 +2362,65 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
     }
 
     function addImageToLayout(evt) {
+        if (evt.target.dataset['containerId'] !== undefined) {
+                let containerId = parseInt(evt.target.dataset['containerId'])
+                for (let container of system.layoutData) {
+                    if (container[0] === containerId) {
+                        mouse.selection = container
+                        mouse.selection[11] = evt.target
+                        break
+                    }
+                }
+        } else if (mouse.selection !== null) {
+            mouse.selection[11] = evt.target
+        } else {
+            createLayoutContainer(mouse.x, mouse.y, mouse.x + evt.target.width, mouse.y + evt.target.height, false)
+            mouse.selection = system.layoutData[system.layoutData.length - 1]
+        }
         
-        if (mouse.selection !== null) mouse.selection[11] = evt.target
-        else {
+        let shadowIndex = system.imgShadow.indexOf(mouse.selection[0])
+        if (shadowIndex !== -1) {
+            system.imgShadow.splice(shadowIndex, 1)
+            let shadowImage = document.querySelector('#imgContainer #img_' + mouse.selection[0])
+            shadowImage.parentNode.removeChild(shadowImage)
+        }
+
+        mouse.selection[11] = evt.target
+        evt.target.removeEventListener('load', addImageToLayout)
+        mouse.highlightSelection = false
+    }
+
+    function addAnimatedImageToLayout(evt) {
+        if (evt.target.dataset['containerId'] !== undefined) {
+            let containerId = parseInt(evt.target.dataset['containerId'])
+            for (let container of system.layoutData) {
+                if (container[0] === containerId) {
+                    mouse.selection = container
+                    mouse.selection[11] = evt.target
+                    break
+                }
+            }
+        } else if (mouse.selection !== null) {
+            mouse.selection[11] = evt.target.src
+        } else {
             createLayoutContainer(mouse.x, mouse.y, mouse.x + evt.target.width, mouse.y + evt.target.height, false)
             mouse.selection = system.layoutData[system.layoutData.length - 1]
         }
 
+        if (system.imgShadow.indexOf(mouse.selection[0]) === -1) {
+            system.imgShadow.push(mouse.selection[0])
+            shadowImg = document.createElement('img')
+            shadowImg.src = evt.target.src
+            shadowImg.style = 'position: absolute; left: ' + mouse.x + 'px; top: ' + mouse.y + 'px; z-index: 1; pointer-events:none; user-select: none;'
+            shadowImg.id = 'img_' + mouse.selection[0]
+            document.querySelector('#imgContainer').appendChild(shadowImg)
+        } else {
+            let shadowImg = document.querySelector('#imgContainer #img_' + mouse.selection[0])
+            shadowImg.src = evt.target.src
+        }
+
         mouse.selection[11] = evt.target
-        
-        evt.target.removeEventListener('load', addImageToLayout)
+        evt.target.removeEventListener('load', addAnimatedImageToLayout)
         mouse.highlightSelection = false
     }
 
@@ -2265,25 +2429,31 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
             if (fileItem.type === 'image/jpeg' || fileItem.type === 'image/webp' || fileItem.type === 'image/png' || fileItem.type === 'image/gif') {
                 if (fileItem.path !== undefined) {
                     let imageMap = new Image()
-                    imageMap.addEventListener('load', addImageToLayout)
+                    if (fileItem.type !== 'image/gif') imageMap.addEventListener('load', addImageToLayout)
+                    else imageMap.addEventListener('load', addAnimatedImageToLayout)
+
                     imageMap.src = fileItem.path
                 } else {
                     let reader = new FileReader()
                     reader.addEventListener("load", function () {
                         let imageMap = new Image()
-                        imageMap.addEventListener('load', addImageToLayout)
+                        if (fileItem.type !== 'image/gif') imageMap.addEventListener('load', addImageToLayout)
+                        else imageMap.addEventListener('load', addAnimatedImageToLayout)
+
                         imageMap.src = reader.result
                     }, false)
-                    
+
                     reader.readAsDataURL(fileItem)
                 }
             }
         }
+
         evt.preventDefault()
     }
 
     function allowImageDrop(evt) {
         evt.preventDefault()
+        handleMouseMove(evt)
         mouse.highlightSelection = true
     }
 
@@ -2304,6 +2474,6 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
     document.querySelector('#savePanel').addEventListener('input', loadElectronSlot)
 
     // Draw the initial grid on the bgCanvas
-    drawGrid(system.gridStartX, system.gridStartY, system.gridEndX, system.gridEndY)
+    drawGrid()
     mainloop()
 }
