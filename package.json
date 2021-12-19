@@ -1,6 +1,6 @@
 {
   "name": "relayx2",
-  "version": "0.2.4",
+  "version": "0.2.6",
   "description": "A (web)designer layout tool with a twist",
   "author": {
     "name": "Jan Riechers",
@@ -74,5 +74,8 @@
         }
       ]
     }
+  },
+  "dependencies": {
+    "node": "^16.10.0"
   }
 }
