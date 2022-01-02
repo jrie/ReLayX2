@@ -963,10 +963,12 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
             return
         }
 
+        // generate new ID to avoid collisions
         let id = 0
-        while (id === system.lastId) {
+        do {
             id = new Date().getTime()
         }
+        while (id === system.lastId)
         system.lastId = id
 
         // id, designElementName, x, y, xEnd, yEnd, border, padding, margin, groupIndex, labeltext, img data or img path
