@@ -154,6 +154,7 @@ function getDesign(designName, width, height) {
 // Main ReLayX
 let system = {}
 let mouse = {}
+// eslint-disable-next-line no-unused-vars
 function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, gridEnd) {
 
     // General variables
@@ -305,12 +306,15 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
         switch (direction) {
             case 'lr':
                 colors = getArrayCopy(colors).reverse()
+                break
             case 'rl':
                 background = dc.createLinearGradient(x, y, x + width, y)
                 break
             case 'tb':
                 colors = getArrayCopy(colors).reverse()
+                break
             case 'bt':
+                break
             default:
                 background = dc.createLinearGradient(x, y, x, y + height)
                 break
@@ -328,7 +332,7 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
 
     // Draw an design item providing the indexes for
     // drawTypes (rect, line, circle), fillStyles index, colors Index, drawingCoordinate Index
-    function drawItem(designItemName, drawTypeIndex, styleIndex, colorIndex, drawingCoordsIndex, offsetXY) {
+    function drawItem(designItemName, drawTypeIndex, styleIndex, colorIndex, drawingCoordsIndex) {
         if (!design.hasOwnProperty(designItemName)) {
             lg('design name for drawing not defined: ' + designItemName)
             return
@@ -354,7 +358,7 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
                     dc.rect(coords[index][0], coords[index][1], coords[index][2], coords[index][3])
                     break
                 case 'line':
-                case 'stroke':
+                case 'stroke': {
                     let linePoints = coords[index]
                     let drawingSteps = linePoints.length
                     dc.moveTo(linePoints[0], linePoints[1])
@@ -364,6 +368,7 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
 
                     dc.lineTo(linePoints[0], linePoints[1])
                     break
+                }
                 case 'circle':
                     dc.moveTo(coords[index][0], coords[index][1])
                     if (parseFloat(drawType[1]) !== 'NaN') {
@@ -376,7 +381,6 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
                 default:
                     lg('Invalid drawing command for designItem: ' + designItemName + ' at index ' + index)
                     return
-                    break
             }
 
             dc.closePath()
@@ -641,7 +645,7 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
                             offsetY += offsetGridY + containerY
                         }
                     } else if (system.spaceGridY !== 0) {
-                        startY = mStartY
+                        let startY = mStartY
                         offsetY = containerY + system.spaceGridY
 
                         while (startY - containerY >= system.gridStartY) {
@@ -844,7 +848,7 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
                     }
 
                     if (system.spaceGridX > 0) {
-                        startX = mStartX
+                        let startX = mStartX
                         offsetX = offsetGridX + containerX
 
                         while (startX - offsetX >= system.gridStartX) {
@@ -876,7 +880,7 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
                     }
 
                     if (system.spaceGridY > 0) {
-                        startY = mStartY
+                        let startY = mStartY
                         offsetY = offsetGridY + containerY
 
                         while (startY - offsetY >= system.gridStartY) {
@@ -959,16 +963,13 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
             return
         }
 
+        // generate new ID to avoid collisions
         let id = 0
-        while (true) {
+        do {
             id = new Date().getTime()
-            if (id === system.lastId) {
-                continue
-            } else {
-                system.lastId = id
-                break
-            }
         }
+        while (id === system.lastId)
+        system.lastId = id
 
         // id, designElementName, x, y, xEnd, yEnd, border, padding, margin, groupIndex, labeltext, img data or img path
         system.layoutData.push([id, 'containerElement', itemStartX, itemStartY, itemEndX, itemEndY, 0, 0, 0, -1, '', null])
@@ -1187,6 +1188,8 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
             let offsetX = 0
             let offsetGridY = 0
             let offsetY = 0
+            let startX = 0
+            let startY = 0
 
             if (system.mirrorHorizontal) {
                 // Repeat current selection horizontally
@@ -1599,31 +1602,19 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
         }
 
         switch (evt.keyCode) {
-            case 35:
+            case 35: {
                 // End key
                 evt.preventDefault()
                 mouse.cursorAt[0] = mouse.selection[2] + ((mouse.selection[4] - mouse.selection[2]) * 0.5) + (dc.measureText(mouse.selection[10]).width * 0.5)
                 mouse.cursorAt[2] = text.length
-
-                /*
-                if (mouse.cursorItem.controlPressed) {
-                    mouse.cursorItem.selection[0] = mouse.cursorAt[2] + 1
-                }
-                */
                 return
-                break
-            case 36:
-                // Position 1 key
+            }
+            case 36: { // Pos1 key
                 evt.preventDefault()
                 mouse.cursorAt[0] = mouse.selection[2] + ((mouse.selection[4] - mouse.selection[2]) * 0.5) - (dc.measureText(mouse.selection[10]).width * 0.5)
                 mouse.cursorAt[2] = 0
-                /*
-                if (mouse.cursorItem.controlPressed) {
-                    mouse.cursorItem.selection[0] = 0
-                }
-                */
                 return
-                break
+            }
             case 9:
                 // Tab key
                 evt.preventDefault()
@@ -1638,11 +1629,9 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
                 mouse.currentAction = null
                 document.removeEventListener('keydown', handleInputFieldInput)
                 return
-                break
             case 17:
                 // Control/Strg key
                 return
-                break
             case 46:
                 // Delete key
                 if (mouse.cursorAt[2] < text.length) {
@@ -1651,9 +1640,7 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
                     mouse.selection[10] = text
                 }
                 return
-                break
-            case 8:
-                // Backspace key
+            case 8: { // Backspace key
                 evt.preventDefault()
                 if (mouse.cursorAt[2] > 0) {
                     mouse.cursorAt[0] -= Math.round(dc.measureText(mouse.selection[10].charAt(mouse.cursorAt[2] - 1)).width * 0.5)
@@ -1662,22 +1649,14 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
                     mouse.selection[10] = text
                 }
                 return
-                break
-            case 16:
-                //  Shift key
+            }
+            case 16: { // Shift key
                 evt.preventDefault()
-                /*
-                mouse.cursorItem.selection = [0, 0]
-                mouse.cursorItem.controlPressed = !mouse.cursorItem.controlPressed
-                mouse.cursorItem.selection[0] = mouse.cursorAt[2] + 1
-                mouse.cursorItem.selection[1] = mouse.cursorAt[2] + 1
-                */
                 return
-                break
+            }
 
-            case 37:
+            case 37: { // Arrow key left
                 evt.preventDefault()
-                // Arrow key left
 
                 if (mouse.cursorAt[2] !== 0) {
                     --mouse.cursorAt[2]
@@ -1685,28 +1664,16 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
                 }
 
                 return
-                break
+            }
 
-            case 39:
-                // Arrow key right
+            case 39: { // Arrow key right
                 evt.preventDefault()
                 if (mouse.cursorAt[2] < text.length) {
                     ++mouse.cursorAt[2]
                     mouse.cursorAt[0] += dc.measureText(text.charAt(mouse.cursorAt[2])).width
                 }
-                /*
-                if (mouse.cursorItem.controlPressed) {
-                    if (cursorIndex < text.length) {
-                        mouse.cursorItem.selection[1] = mouse.cursorAt[2] + 1
-                    } else {
-                        mouse.cursorItem.selection[1] = mouse.cursorAt[2]
-                    }
-                }
-                */
-
                 return
-                break
-
+            }
         }
 
         if (evt.key.length === 1) {
@@ -1782,7 +1749,7 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
                 // Delete key
                 for (let item = 0; item < system.layoutSize; item++) {
                     if (system.layoutData[item][0] === mouse.selection[0]) {
-                        hasNewSelection = false
+                        let hasNewSelection = false
 
                         // Remove the underlying animated image if present
                         let shadowIndex = system.imgShadow.indexOf(mouse.selection[0])
@@ -1959,7 +1926,7 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
         let layoutSubKey = layoutKey + '_'
         let hasError = false
         let item = 0
-        savePanel.textContent = ''
+        document.querySelector('#savePanel').textContent = ''
 
         try {
             system.storage.setItem(layoutKey, true)
@@ -1974,7 +1941,7 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
         for (item = 0; item < system.layoutSize; item++) {
             if (system.layoutData[item][11] !== null) {
                 let temp = system.layoutData[item][11]
-                system.layoutData[item][11] = system.layoutData[item][11].src.toString().replace(/\,/g, '|||')
+                system.layoutData[item][11] = system.layoutData[item][11].src.toString().replace(/,/g, '|||')
                 try {
                     system.storage.setItem(layoutSubKey + item, system.layoutData[item].join('|#|'))
                 } catch (err) {
@@ -1988,14 +1955,13 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
 
                     break
                 }
-                savePanel.textContent += system.layoutData[item].join('|#|') + '\n'
+                document.querySelector('#savePanel').textContent += system.layoutData[item].join('|#|') + '\n'
                 system.layoutData[item][11] = temp
             } else {
                 try {
                     system.storage.setItem(layoutSubKey + item, system.layoutData[item].join('|#|'))
                 } catch (err) {
                     if (err.code === DOMException.QUOTA_EXCEEDED_ERR) {
-                        system.layoutData[item][11] = temp
                         system.storage.removeItem(layoutKey)
                         alert('Could not save data because of storage limit.\n\nError: "' + err.name + '"\nMessage: ' + err.message)
                         system.shiftPressed = false
@@ -2004,7 +1970,7 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
 
                     break
                 }
-                savePanel.textContent += system.layoutData[item].join('|#|') + '\n'
+                document.querySelector('#savePanel').textContent += system.layoutData[item].join('|#|') + '\n'
             }
         }
 
@@ -2391,6 +2357,7 @@ function relayx(canvasItem, designName, width, height, gridX, gridY, gridStart, 
     }
 
     function addAnimatedImageToLayout(evt) {
+        let shadowImg
         if (evt.target.dataset['containerId'] !== undefined) {
             let containerId = parseInt(evt.target.dataset['containerId'])
             for (let container of system.layoutData) {
